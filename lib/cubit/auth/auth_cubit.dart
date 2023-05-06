@@ -25,27 +25,20 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final googleAccount = await _googleSignIn.signIn();
 
-      print("PASS 1");
-
       if (googleAccount == null) {
         emit(AuthFailed(error: "Please login again!"));
         return;
       }
 
-      print("PASS 2");
-
       final googleAuth = await googleAccount.authentication;
 
-      print("PASS 3");
       if (googleAuth.accessToken != null && googleAuth.idToken != null) {
-        print("PASS 4");
         final authResult = await _auth.signInWithCredential(
           GoogleAuthProvider.credential(
               idToken: googleAuth.idToken, accessToken: googleAuth.accessToken),
         );
 
         emit(AuthSuccess(user: authResult.user!));
-        print("PASS 5");
       }
     } on FirebaseAuthException catch (error) {
       emit(AuthFailed(error: error.message.toString()));
@@ -60,7 +53,6 @@ class AuthCubit extends Cubit<AuthState> {
       final user = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       emit(AuthSuccess(user: user.user!));
-      print(user);
     } on FirebaseAuthException catch (e) {
       emit(AuthFailed(error: e.message.toString()));
     } catch (error) {
@@ -77,7 +69,7 @@ class AuthCubit extends Cubit<AuthState> {
       //Revoke Google access token
       await _googleSignIn.signOut();
 
-      emit(AuthInitial());
+      emit(AuthLogout());
     } catch (error) {
       emit(AuthFailed(error: error.toString()));
     }

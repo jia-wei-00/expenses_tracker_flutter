@@ -1,8 +1,10 @@
 import 'package:expenses_tracker/components/app_bar.dart';
 import 'package:expenses_tracker/components/navigationbar.dart';
+import 'package:expenses_tracker/components/snackbar.dart';
 import 'package:expenses_tracker/constant/page_constant.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/route/route_cubit.dart';
+import 'package:expenses_tracker/pages/login_page.dart';
 import 'package:expenses_tracker/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -33,6 +35,12 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
+  @override
+  void initState() {
+    super.initState();
+    AuthCubit().checkSignin();
+  }
+
   int _currentIndex = 0;
 
   @override
@@ -45,11 +53,30 @@ class _MainAppState extends State<MainApp> {
       },
       builder: (context, state) {
         return MaterialApp(
-          home: Scaffold(
-            appBar: appBar(_currentIndex),
-            body: pages[_currentIndex].page,
-            bottomNavigationBar:
-                navigationBar(_currentIndex, context.read<RouteCubit>()),
+          home: BlocConsumer<AuthCubit, AuthState>(
+            listener: (context, state) {
+              if (state is AuthSuccess) {
+                snackBar("Welcome ${state.user.email!.substring(0, 10)}...",
+                    Colors.green, Colors.white, context);
+              }
+
+              if (state is AuthLogout) {
+                snackBar(
+                    "Successfully logout", Colors.green, Colors.white, context);
+              }
+            },
+            builder: (context, state) {
+              return state is AuthSuccess
+                  ? Scaffold(
+                      appBar: appBar(_currentIndex, context, state.user.email!),
+                      body: pages[_currentIndex].page,
+                      bottomNavigationBar: navigationBar(
+                          _currentIndex, context.read<RouteCubit>()),
+                    )
+                  : const Scaffold(
+                      body: Center(child: LoginPage()),
+                    );
+            },
           ),
           theme: buildTheme(Brightness.dark),
         );

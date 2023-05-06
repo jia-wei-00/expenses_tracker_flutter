@@ -28,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.only(top: 50, bottom: 50),
               child: Center(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Image(

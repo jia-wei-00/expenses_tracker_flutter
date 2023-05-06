@@ -1,14 +1,21 @@
 name: expenses_tracker
 description: A new Flutter project.
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: ">=2.19.6 <3.0.0"
 
 dependencies:
+  firebase_auth: ^4.5.0
+  firebase_core: ^2.11.0
+  fl_chart: ^0.62.0
   flutter:
     sdk: flutter
+  flutter_bloc: ^8.1.2
+  google_fonts: ^4.0.4
+  google_sign_in: ^6.1.0
+  salomon_bottom_bar: ^3.3.2
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +24,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/

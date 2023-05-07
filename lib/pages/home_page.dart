@@ -20,28 +20,20 @@ num balance(List<Expense> expenses) {
       .reduce((value, element) => value + element);
 }
 
-num income(List<Expense> expenses) {
-  num income = 0;
-
-  expenses.map((e) {
-    if (e.type == "income") {
-      income += num.parse(e.amount);
-    }
-  });
-
-  return income;
+num? income(List<Expense> expenses) {
+  final income = expenses.where((e) => e.type == "income");
+  if (income.isEmpty) return null;
+  return income
+      .map((e) => num.parse(e.amount))
+      .reduce((value, element) => value + element);
 }
 
-num expense(List<Expense> expenses) {
-  num expense = 0;
-
-  expenses.map((e) {
-    if (e.type == "expense") {
-      expense += num.parse(e.amount);
-    }
-  });
-
-  return expense;
+num? expense(List<Expense> expenses) {
+  final incomeExpenses = expenses.where((e) => e.type == "expense");
+  if (incomeExpenses.isEmpty) return null;
+  return incomeExpenses
+      .map((e) => num.parse(e.amount))
+      .reduce((value, element) => value + element);
 }
 
 class _HomePageState extends State<HomePage> {
@@ -57,38 +49,64 @@ class _HomePageState extends State<HomePage> {
               builder: (context, state) {
                 final List<Expense> expenses =
                     state is FirestoreRecordLoaded ? state.expenses : [];
-                return Column(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        bigFont("Balance"),
-                        const SizedBox(width: 5),
-                        mediumFont(
-                            "(${DateFormat('MMMM yyyy').format(DateTime.now())})"),
-                      ],
-                    ),
-                    state is FirestoreRecordLoaded
-                        ? mediumFont("RM${balance(expenses)}")
-                        : const SizedBox.shrink(),
-                    Row(
-                      children: [
-                        Container(
-                          child: Column(
-                            children: [
-                              bigFont("INCOME"),
-                            ],
+                if (state is FirestoreRecordLoaded) {
+                  final List<Expense> expenses = state.expenses;
+                  return Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          bigFont("Balance"),
+                          const SizedBox(width: 5),
+                          mediumFont(
+                              "(${DateFormat('MMMM yyyy').format(DateTime.now())})"),
+                        ],
+                      ),
+                      mediumFont("RM${balance(expenses)}"),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(16.0),
+                              margin: const EdgeInsets.all(5.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: Column(
+                                children: [
+                                  bigFont("EXPENSES", color: Colors.black),
+                                  mediumFont(
+                                      "RM${expense(expenses).toString()}",
+                                      color: Colors.red),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    ElevatedButton(
-                      onPressed: () =>
-                          context.read<FirestoreCubit>().fetchData(user),
-                      child: const Text("Testing Button"),
-                    ),
-                  ],
-                );
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(16.0),
+                              margin: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: Column(
+                                children: [
+                                  bigFont("INCOME", color: Colors.black),
+                                  mediumFont("RM${income(expenses).toString()}",
+                                      color: Colors.green),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                } else {
+                  return const CircularProgressIndicator();
+                }
               },
             ),
           ),

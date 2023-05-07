@@ -3,6 +3,7 @@ import 'package:expenses_tracker/components/navigationbar.dart';
 import 'package:expenses_tracker/components/snackbar.dart';
 import 'package:expenses_tracker/constant/page_constant.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
+import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
 import 'package:expenses_tracker/cubit/route/route_cubit.dart';
 import 'package:expenses_tracker/pages/login_page.dart';
 import 'package:expenses_tracker/theme/theme.dart';
@@ -21,6 +22,7 @@ Future<void> main() async {
       providers: [
         BlocProvider(create: (context) => RouteCubit()),
         BlocProvider(create: (context) => AuthCubit()),
+        BlocProvider(create: (context) => FirestoreCubit()),
       ],
       child: const MainApp(),
     ),

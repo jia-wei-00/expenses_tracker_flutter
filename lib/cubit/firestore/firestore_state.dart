@@ -5,26 +5,39 @@ abstract class FirestoreState {}
 
 class FirestoreInitial extends FirestoreState {}
 
+class FirestoreLoading extends FirestoreState {}
+
 class FirestoreSuccess extends FirestoreState {
   final String message;
-  final List<Expense> expenses;
 
-  FirestoreSuccess({required this.message, required this.expenses});
+  FirestoreSuccess({required this.message});
 }
 
-class FirestoreError extends FirestoreState {}
+class FirestoreError extends FirestoreState {
+  final String error;
+
+  FirestoreError({required this.error});
+}
+
+class FirestoreRecordLoaded extends FirestoreState {
+  final List<Expense> expenses;
+
+  FirestoreRecordLoaded({required this.expenses});
+}
 
 class Expense {
-  final num amount;
-  final String category;
+  final String id;
+  final String amount;
   final String name;
-  final DateTime timestamp;
   final String type;
+  final String category;
+  final DateTime timestamp;
 
   Expense(
-      {required this.amount,
-      required this.category,
+      {required this.id,
+      required this.amount,
       required this.name,
-      required this.timestamp,
-      required this.type});
+      required this.type,
+      required this.category,
+      required this.timestamp});
 }

@@ -182,27 +182,47 @@ class _HomePageState extends State<HomePage> {
                               final amountColor =
                                   isExpense ? Colors.red : Colors.green;
 
-                              return Container(
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    left: BorderSide(
-                                        color: amountColor, width: 5),
-                                  ),
-                                ),
-                                child: ListTile(
-                                  title: Text(transaction.name),
-                                  subtitle:
-                                      Text(transaction.timestamp.toString()),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                          icon: const Icon(Icons.edit),
-                                          onPressed: () {}),
-                                      IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () {}),
-                                    ],
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 4, bottom: 4),
+                                child: Container(
+                                  margin: EdgeInsets.zero,
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(10)),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border(
+                                          left: BorderSide(
+                                              color: amountColor, width: 5),
+                                        ),
+                                      ),
+                                      child: ListTile(
+                                        title: mediumFont(transaction.name,
+                                            color: Colors.black),
+                                        subtitle: mediumFont(
+                                            "RM${transaction.amount.toString()}",
+                                            color:
+                                                Colors.black.withOpacity(0.6)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                                color: Colors.black
+                                                    .withOpacity(0.7),
+                                                icon: const Icon(Icons.edit),
+                                                onPressed: () {}),
+                                            IconButton(
+                                                color: Colors.black
+                                                    .withOpacity(0.7),
+                                                icon: const Icon(
+                                                    Icons.delete_forever),
+                                                onPressed: () {}),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               );

@@ -3,6 +3,7 @@ import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// Page is login page
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -55,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
                                   prefixIconColor: Colors.white,
                                 ),
                                 validator: (value) {
-                                  if (value == null) {
+                                  if (value == "" || value == null) {
                                     return 'Please enter your email address';
                                   }
                                   // Validate email format here
@@ -77,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
                                   prefixIconColor: Colors.white,
                                 ),
                                 validator: (value) {
-                                  if (value == null) {
+                                  if ((value == "" || value == null)) {
                                     return 'Please enter your password';
                                   }
                                   // Validate password strength here

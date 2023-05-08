@@ -1,3 +1,4 @@
+import 'package:expenses_tracker/components/divider.dart';
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
@@ -70,7 +71,8 @@ class _HomePageState extends State<HomePage> {
             _focusNode.unfocus();
           },
           child: Scaffold(
-            body: Center(
+            body: Container(
+              padding: const EdgeInsets.all(12),
               child: BlocBuilder<FirestoreCubit, FirestoreState>(
                 builder: (context, state) {
                   final List<Expense> expenses =
@@ -94,7 +96,6 @@ class _HomePageState extends State<HomePage> {
                             Expanded(
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
-                                margin: const EdgeInsets.all(5.0),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(8.0),
@@ -109,6 +110,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ),
+                            const SizedBox(width: 5),
                             Expanded(
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
@@ -129,33 +131,83 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ],
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            mediumFont("History"),
-                            SizedBox(
-                              width: 200, // Set the desired width here
-                              child: Expanded(
-                                child: TextField(
-                                  focusNode: _focusNode,
-                                  controller: _searchController,
-                                  decoration: InputDecoration(
-                                    hintText: 'Search...',
-                                    hintStyle: const TextStyle(fontSize: 13),
-                                    prefixIcon: const Icon(Icons.search),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5, bottom: 5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              mediumFont("History"),
+                              SizedBox(
+                                height: 35,
+                                width: 200, // Set the desired width here
+                                child: Expanded(
+                                  child: TextField(
+                                    focusNode: _focusNode,
+                                    controller: _searchController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Search...',
+                                      contentPadding:
+                                          EdgeInsets.only(bottom: 3),
+                                      hintStyle: TextStyle(fontSize: 13),
+                                      prefixIcon: Icon(
+                                        Icons.search,
+                                        size: 20,
+                                        color: Colors.white,
+                                      ),
+                                      prefixIconConstraints: BoxConstraints(
+                                        minWidth: 30,
+                                        minHeight: 40,
+                                      ),
                                     ),
+                                    style: const TextStyle(fontSize: 15),
+                                    onSubmitted: (value) {
+                                      if (value != "") {
+                                        print("object");
+                                      }
+                                    },
                                   ),
-                                  onSubmitted: (value) {
-                                    if (value != "") {
-                                      print("object");
-                                    }
-                                  },
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+                        divider(),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: expenses.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final transaction = expenses[index];
+                              final isExpense = transaction.type == "expense";
+                              final amountColor =
+                                  isExpense ? Colors.red : Colors.green;
+
+                              return Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                        color: amountColor, width: 5),
+                                  ),
+                                ),
+                                child: ListTile(
+                                  title: Text(transaction.name),
+                                  subtitle:
+                                      Text(transaction.timestamp.toString()),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                          icon: const Icon(Icons.edit),
+                                          onPressed: () {}),
+                                      IconButton(
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () {}),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ],
                     );

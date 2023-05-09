@@ -237,7 +237,14 @@ class _HomePageState extends State<HomePage> {
                                                         .withOpacity(0.7),
                                                     icon:
                                                         const Icon(Icons.edit),
-                                                    onPressed: () {},
+                                                    onPressed: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            modal(transaction),
+                                                      );
+                                                    },
                                                   ),
                                                   IconButton(
                                                     padding:

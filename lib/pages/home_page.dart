@@ -1,3 +1,4 @@
+import 'package:expenses_tracker/components/details_modal.dart';
 import 'package:expenses_tracker/components/divider.dart';
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
@@ -80,6 +81,7 @@ class _HomePageState extends State<HomePage> {
                   if (state is FirestoreRecordLoaded) {
                     final List<Expense> expenses = state.expenses;
                     return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -161,11 +163,6 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     ),
                                     style: const TextStyle(fontSize: 15),
-                                    onSubmitted: (value) {
-                                      if (value != "") {
-                                        print("object");
-                                      }
-                                    },
                                   ),
                                 ),
                               ),
@@ -174,61 +171,118 @@ class _HomePageState extends State<HomePage> {
                         ),
                         divider(),
                         Expanded(
-                          child: ListView.builder(
-                            itemCount: expenses.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final transaction = expenses[index];
-                              final isExpense = transaction.type == "expense";
-                              final amountColor =
-                                  isExpense ? Colors.red : Colors.green;
+                          child: ValueListenableBuilder(
+                            valueListenable: _searchController,
+                            builder: (BuildContext context, _, __) {
+                              var filteredExpenses = expenses
+                                  .where((element) =>
+                                      element.name.toLowerCase().contains(
+                                          _searchController.text
+                                              .toLowerCase()) ||
+                                      element.amount.contains(
+                                          _searchController.text.toLowerCase()))
+                                  .toList();
 
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 4, bottom: 4),
-                                child: Container(
-                                  margin: EdgeInsets.zero,
-                                  child: ClipRRect(
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(10)),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        border: Border(
-                                          left: BorderSide(
-                                              color: amountColor, width: 5),
-                                        ),
-                                      ),
-                                      child: ListTile(
-                                        title: mediumFont(transaction.name,
-                                            color: Colors.black),
-                                        subtitle: mediumFont(
-                                            "RM${transaction.amount.toString()}",
-                                            color:
-                                                Colors.black.withOpacity(0.6)),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                                color: Colors.black
-                                                    .withOpacity(0.7),
-                                                icon: const Icon(Icons.edit),
-                                                onPressed: () {}),
-                                            IconButton(
-                                                color: Colors.black
-                                                    .withOpacity(0.7),
-                                                icon: const Icon(
-                                                    Icons.delete_forever),
-                                                onPressed: () {}),
-                                          ],
+                              return ListView.builder(
+                                itemCount: filteredExpenses.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var transaction = filteredExpenses[index];
+                                  var isExpense = transaction.type == "expense";
+                                  var amountColor =
+                                      isExpense ? Colors.red : Colors.green;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 4, bottom: 4),
+                                    child: InkWell(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              detailsModal(
+                                                  context,
+                                                  context.read<AuthCubit>(),
+                                                  transaction),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.zero,
+                                        child: ClipRRect(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(10)),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              border: Border(
+                                                left: BorderSide(
+                                                    color: amountColor,
+                                                    width: 5),
+                                              ),
+                                            ),
+                                            child: ListTile(
+                                              title: mediumFont(
+                                                  transaction.name,
+                                                  color: Colors.black),
+                                              subtitle: mediumFont(
+                                                  "RM${transaction.amount.toString()}",
+                                                  color: Colors.black
+                                                      .withOpacity(0.6)),
+                                              trailing: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    padding:
+                                                        const EdgeInsets.all(0),
+                                                    color: Colors.black
+                                                        .withOpacity(0.7),
+                                                    icon:
+                                                        const Icon(Icons.edit),
+                                                    onPressed: () {},
+                                                  ),
+                                                  IconButton(
+                                                    padding:
+                                                        const EdgeInsets.all(0),
+                                                    color: Colors.black
+                                                        .withOpacity(0.7),
+                                                    icon: const Icon(
+                                                        Icons.delete_forever),
+                                                    onPressed: () {},
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               );
                             },
                           ),
                         ),
+                        divider(),
+                        Row(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                              child: const Text('Add Income'),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                              child: mediumFont('Add Expense'),
+                            ),
+                          ],
+                        )
                       ],
                     );
                   } else {

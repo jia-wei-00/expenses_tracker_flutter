@@ -23,6 +23,7 @@ Future<void> main() async {
         BlocProvider(create: (context) => RouteCubit()),
         BlocProvider(create: (context) => AuthCubit()),
         BlocProvider(create: (context) => FirestoreCubit()),
+        BlocProvider(create: (context) => ExpensesBloc()),
       ],
       child: const MainApp(),
     ),

@@ -1,5 +1,6 @@
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
+import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -117,8 +118,10 @@ class _LoginPageState extends State<LoginPage> {
                                 width: 220,
                                 child: state is AuthSuccess
                                     ? ElevatedButton(
-                                        onPressed: () =>
-                                            context.read<AuthCubit>().logOut(),
+                                        onPressed: () => context
+                                            .read<AuthCubit>()
+                                            .logOut(
+                                                context.read<ExpensesBloc>()),
                                         child: const Text("Logout"),
                                       )
                                     : ElevatedButton(

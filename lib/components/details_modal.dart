@@ -3,7 +3,19 @@ import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+
+List<String> _typesExpense = [
+  'Food',
+  'Transportation',
+  'Healthcare',
+  'Entertainment',
+  'Household',
+  'Others'
+];
+
+List<String> _typesIncome = ['Salary', 'Others'];
 
 AlertDialog detailsModal(
     BuildContext context, AuthCubit cubit, Expense expenses) {
@@ -24,7 +36,7 @@ AlertDialog detailsModal(
       dividerThickness: 1.5,
       headingRowHeight: 10,
       horizontalMargin: 0,
-      dataRowHeight: 60,
+      // dataRowHeight: 100,
       columns: const [
         DataColumn(label: SizedBox()), // Empty column for titles
         DataColumn(label: SizedBox()),
@@ -42,19 +54,14 @@ AlertDialog detailsModal(
                 width: 100,
                 padding: const EdgeInsets.all(8.0),
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  title,
-                  style: const TextStyle(color: Colors.white),
-                ),
+                child: smallFont(title, color: Colors.white),
               ),
             ),
             DataCell(
               Container(
                 padding: const EdgeInsets.all(8.0),
                 alignment: Alignment.centerLeft,
-                child: Expanded(
-                  child: Text(value),
-                ),
+                child: smallFont(value, color: Colors.white),
               ),
             ),
           ],
@@ -78,21 +85,15 @@ AlertDialog editModal(User user, List<Expense> expenses, int index,
   num _amount = num.parse(expenses[index].amount);
   String _selectedType = expenses[index].category;
 
-  List<String> _types = [
-    'Food',
-    'Transportation',
-    'Healthcare',
-    'Entertainment',
-    'Household',
-    'Others'
-  ];
+  List<String> tmpList =
+      expenses[index].type == "expense" ? _typesExpense : _typesIncome;
 
   return AlertDialog(
     title: bigFont("Edit Details"),
     content: Form(
       key: _formKey,
       child: SizedBox(
-        height: 250,
+        height: 260,
         child: Column(
           children: [
             TextFormField(
@@ -112,7 +113,7 @@ AlertDialog editModal(User user, List<Expense> expenses, int index,
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Type'),
               value: _selectedType,
-              items: _types.map((type) {
+              items: tmpList.map((type) {
                 return DropdownMenuItem(
                   value: type,
                   child: Text(type),
@@ -142,29 +143,128 @@ AlertDialog editModal(User user, List<Expense> expenses, int index,
             const SizedBox(
               height: 30,
             ),
-            ElevatedButton(
-              onPressed: () {
-                // print("hello");
+            BlocBuilder<FirestoreCubit, FirestoreState>(
+              builder: (context, state) {
+                if (state is FirestoreUpdateLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ElevatedButton(
+                    onPressed: () async {
+                      final tmp = Expense(
+                        id: expenses[index].id,
+                        amount: _amount.toString(),
+                        name: _name,
+                        type: _type,
+                        category: _selectedType,
+                        timestamp: expenses[index].timestamp,
+                      );
 
-                final tmp = Expense(
-                  id: expenses[index].id,
-                  amount: _amount.toString(),
-                  name: _name,
-                  type: _type,
-                  category: _selectedType,
-                  timestamp: expenses[index].timestamp,
-                );
-
-                firestore.updateData(user, tmp, index);
-                // if (_formKey.currentState!.validate()) {
-                //   _formKey.currentState!.save();
-                //   // Do something with the form data
-                //   print('Name: $_name');
-                //   print('Type: $_type');
-                //   print('Amount: $_amount');
-                // }
+                      await firestore.updateData(
+                          user, tmp, index, context.read<ExpensesBloc>());
+                      Navigator.pop(context, 'Cancel');
+                    },
+                    child: const Text('Submit'),
+                  );
+                }
               },
-              child: const Text('Submit'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+AlertDialog addTransactionModal(
+    User user, FirestoreCubit firestore, String type) {
+  final _formKey = GlobalKey<FormState>();
+  String _name = "";
+  num _amount = 0;
+  String _selectedType = type == "expense" ? "Food" : "Salary";
+
+  List<String> tmpList = type == "expense" ? _typesExpense : _typesIncome;
+
+  return AlertDialog(
+    title: bigFont(type == "expense" ? "Add Expenses" : "Add Income"),
+    content: Form(
+      key: _formKey,
+      child: SizedBox(
+        height: 260,
+        child: Column(
+          children: [
+            TextFormField(
+              initialValue: _name,
+              decoration: const InputDecoration(labelText: 'Name'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a name';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                // Save the form value
+                _name = value;
+              },
+            ),
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(labelText: 'Type'),
+              value: _selectedType,
+              items: tmpList.map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList(),
+              onChanged: (value) {
+                _selectedType = value!;
+              },
+            ),
+            TextFormField(
+              initialValue: _amount.toString(),
+              decoration: const InputDecoration(labelText: 'Amount'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _amount = num.parse(value),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter an amount';
+                }
+                try {
+                  double.parse(value);
+                } catch (e) {
+                  return 'Please enter a valid number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            BlocBuilder<FirestoreCubit, FirestoreState>(
+              builder: (context, state) {
+                if (state is FirestoreUpdateLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ElevatedButton(
+                    onPressed: () async {
+                      final tmp = ExpenseNoID(
+                          amount: _amount.toString(),
+                          name: _name,
+                          type: type,
+                          category: _selectedType,
+                          timestamp: DateTime.now());
+
+                      await firestore.addTransaction(
+                          user, tmp, context.read<ExpensesBloc>());
+                      Navigator.pop(context, 'Cancel');
+                    },
+                    child: const Text('Submit'),
+                  );
+                }
+              },
             ),
           ],
         ),

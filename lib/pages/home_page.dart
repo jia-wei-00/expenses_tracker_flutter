@@ -53,6 +53,7 @@ num? expense(List<Expense> expenses) {
 class _HomePageState extends State<HomePage> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
+  List<Expense> expenses = [];
 
   @override
   void dispose() {
@@ -66,7 +67,12 @@ class _HomePageState extends State<HomePage> {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final user = state is AuthSuccess ? state.user : null;
-        context.read<FirestoreCubit>().fetchData(user!);
+        final expensesBloc = context.watch<ExpensesBloc>();
+        if (expensesBloc.state.isEmpty) {
+          context
+              .read<FirestoreCubit>()
+              .fetchData(user!, context.read<ExpensesBloc>());
+        }
         return GestureDetector(
           onTap: () {
             // Unfocus the search input when the user taps outside
@@ -77,10 +83,10 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(12),
               child: BlocBuilder<FirestoreCubit, FirestoreState>(
                 builder: (context, state) {
-                  final List<Expense> expenses =
-                      state is FirestoreRecordLoaded ? state.expenses : [];
-                  if (state is FirestoreRecordLoaded) {
-                    final List<Expense> expenses = state.expenses;
+                  expenses = expensesBloc.state;
+                  if (state is FirestoreLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -244,7 +250,7 @@ class _HomePageState extends State<HomePage> {
                                                         builder: (BuildContext
                                                                 context) =>
                                                             editModal(
-                                                                user,
+                                                                user!,
                                                                 expenses,
                                                                 index,
                                                                 context.read<
@@ -269,17 +275,10 @@ class _HomePageState extends State<HomePage> {
                                                                 context,
                                                                 context.read<
                                                                     FirestoreCubit>(),
-                                                                user,
+                                                                user!,
                                                                 transaction,
                                                                 index),
                                                       );
-                                                      // context
-                                                      //     .read<
-                                                      //         FirestoreCubit>()
-                                                      //     .deleteData(
-                                                      //         user,
-                                                      //         transaction,
-                                                      //         index);
                                                     },
                                                   ),
                                                 ],
@@ -299,28 +298,44 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           children: [
                             ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                              ),
-                              child: const Text('Add Income'),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      addTransactionModal(
+                                          user!,
+                                          context.read<FirestoreCubit>(),
+                                          'expense'),
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
                               ),
                               child: mediumFont('Add Expense'),
                             ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      addTransactionModal(
+                                          user!,
+                                          context.read<FirestoreCubit>(),
+                                          'income'),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                              child: const Text('Add Income'),
+                            ),
                           ],
                         )
                       ],
                     );
-                  } else {
-                    return const Center(child: CircularProgressIndicator());
                   }
                 },
               ),

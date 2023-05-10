@@ -24,9 +24,9 @@ class FirestoreError extends FirestoreState {
 }
 
 class FirestoreRecordLoaded extends FirestoreState {
-  final List<Expense> expenses;
+  // final List<Expense> expenses;
 
-  FirestoreRecordLoaded({required this.expenses});
+  // FirestoreRecordLoaded({required this.expenses});
 }
 
 class Expense {
@@ -40,6 +40,21 @@ class Expense {
   Expense(
       {required this.id,
       required this.amount,
+      required this.name,
+      required this.type,
+      required this.category,
+      required this.timestamp});
+}
+
+class ExpenseNoID {
+  final String amount;
+  final String name;
+  final String type;
+  final String category;
+  final DateTime timestamp;
+
+  ExpenseNoID(
+      {required this.amount,
       required this.name,
       required this.type,
       required this.category,

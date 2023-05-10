@@ -1,6 +1,7 @@
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -69,12 +70,13 @@ AlertDialog detailsModal(
   );
 }
 
-AlertDialog modal(Expense expenses) {
+AlertDialog modal(User user, List<Expense> expenses, int index,
+    FirestoreCubit firestore, FirestoreState state) {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _typeController = TextEditingController();
-  final _amountController = TextEditingController();
-  String _selectedType;
+  String _name = expenses[index].name;
+  String _type = expenses[index].type;
+  num _amount = num.parse(expenses[index].amount);
+  String _selectedType = expenses[index].category;
 
   List<String> _types = [
     'Food',
@@ -89,22 +91,27 @@ AlertDialog modal(Expense expenses) {
     title: bigFont("Edit Details"),
     content: Form(
       key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a name';
-              }
-              return null;
-            },
-          ),
-          Expanded(
-            child: DropdownButtonFormField<String>(
+      child: SizedBox(
+        height: 250,
+        child: Column(
+          children: [
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Name'),
+              initialValue: expenses[index].name,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a name';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                // Save the form value
+                _name = value;
+              },
+            ),
+            DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Type'),
-              value: expenses.category,
+              value: expenses[index].category,
               items: _types.map((type) {
                 return DropdownMenuItem(
                   value: type,
@@ -115,36 +122,52 @@ AlertDialog modal(Expense expenses) {
                 _selectedType = value!;
               },
             ),
-          ),
-          TextFormField(
-            controller: _amountController,
-            decoration: const InputDecoration(labelText: 'Amount'),
-            keyboardType: TextInputType.number,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter an amount';
-              }
-              try {
-                double.parse(value);
-              } catch (e) {
-                return 'Please enter a valid number';
-              }
-              return null;
-            },
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // if (_formKey.currentState!.validate()) {
-              //   _formKey.currentState!.save();
-              //   // Do something with the form data
-              //   print('Name: $_name');
-              //   print('Type: $_type');
-              //   print('Amount: $_amount');
-              // }
-            },
-            child: Text('Submit'),
-          ),
-        ],
+            TextFormField(
+              initialValue: _amount.toString(),
+              decoration: const InputDecoration(labelText: 'Amount'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _amount = num.parse(value),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter an amount';
+                }
+                try {
+                  double.parse(value);
+                } catch (e) {
+                  return 'Please enter a valid number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // print("hello");
+
+                final tmp = Expense(
+                  id: expenses[index].id,
+                  amount: _amount.toString(),
+                  name: _name,
+                  type: _type,
+                  category: _selectedType,
+                  timestamp: expenses[index].timestamp,
+                );
+
+                firestore.updateData(user, tmp, index);
+                // if (_formKey.currentState!.validate()) {
+                //   _formKey.currentState!.save();
+                //   // Do something with the form data
+                //   print('Name: $_name');
+                //   print('Type: $_type');
+                //   print('Amount: $_amount');
+                // }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        ),
       ),
     ),
   );

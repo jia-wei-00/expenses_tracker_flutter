@@ -7,6 +7,10 @@ class FirestoreInitial extends FirestoreState {}
 
 class FirestoreLoading extends FirestoreState {}
 
+class FirestoreUpdateLoading extends FirestoreState {}
+
+class FirestoreUpdateSuccess extends FirestoreState {}
+
 class FirestoreSuccess extends FirestoreState {
   final String message;
 

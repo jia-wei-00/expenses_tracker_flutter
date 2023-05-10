@@ -9,6 +9,8 @@ part 'firestore_state.dart';
 class FirestoreCubit extends Cubit<FirestoreState> {
   FirestoreCubit() : super(FirestoreInitial());
 
+  List<Expense> data_list = [];
+
   final db = FirebaseFirestore.instance;
 
   String getMonth() {
@@ -18,14 +20,15 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
   Future<void> fetchData(User user) async {
     emit(FirestoreLoading());
+
     try {
       final querySnapshot = await db
           .collection("expense__tracker")
           .doc(user.email)
           .collection(getMonth())
           .orderBy("timestamp", descending: true)
-          .snapshots()
-          .first;
+          .get();
+
       final List<Expense> payload = querySnapshot.docs.map((doc) {
         final data = doc.data();
         return Expense(
@@ -37,7 +40,54 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           timestamp: (data['timestamp'] as Timestamp).toDate(),
         );
       }).toList();
+
+      data_list = payload;
       emit(FirestoreRecordLoaded(expenses: payload));
+    } catch (e) {
+      emit(FirestoreError(error: e.toString()));
+    }
+  }
+
+  Future<void> updateData(User user, Expense expenses, int index) async {
+    try {
+      await db
+          .collection("expense__tracker")
+          .doc(user.email)
+          .collection(DateFormat('MMMM yyyy').format(expenses.timestamp))
+          .doc(expenses.id)
+          .update({
+        'amount': expenses.amount,
+        'name': expenses.name,
+        'type': expenses.type,
+        'category': expenses.category,
+        'timestamp': expenses.timestamp,
+      });
+
+      data_list[index] = Expense(
+          id: expenses.id,
+          amount: expenses.amount,
+          name: expenses.name,
+          type: expenses.type,
+          category: expenses.category,
+          timestamp: expenses.timestamp);
+      emit(FirestoreRecordLoaded(expenses: data_list));
+    } catch (e) {
+      emit(FirestoreError(error: e.toString()));
+    }
+  }
+
+  Future<void> deleteData(User user, Expense expenses, int index) async {
+    // emit(FirestoreLoading());
+    try {
+      final querySnapshot = await db
+          .collection("expense__tracker")
+          .doc(user.email)
+          .collection(DateFormat('MMMM yyyy').format(expenses.timestamp))
+          .doc(expenses.id)
+          .delete();
+
+      data_list.removeAt(index);
+      emit(FirestoreRecordLoaded(expenses: data_list));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }

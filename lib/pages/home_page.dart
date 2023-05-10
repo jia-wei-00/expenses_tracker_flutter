@@ -1,4 +1,5 @@
 import 'package:expenses_tracker/components/details_modal.dart';
+import 'package:expenses_tracker/components/dialog.dart';
 import 'package:expenses_tracker/components/divider.dart';
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
@@ -106,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     bigFont("EXPENSES", color: Colors.black),
                                     mediumFont(
-                                        "RM${expense(expenses).toString()}",
+                                        "RM${expense(expenses) == null ? 0 : expense(expenses).toString()}",
                                         color: Colors.red),
                                   ],
                                 ),
@@ -125,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     bigFont("INCOME", color: Colors.black),
                                     mediumFont(
-                                        "RM${income(expenses).toString()}",
+                                        "RM${income(expenses) == null ? 0 : income(expenses).toString()}",
                                         color: Colors.green),
                                   ],
                                 ),
@@ -242,7 +243,13 @@ class _HomePageState extends State<HomePage> {
                                                         context: context,
                                                         builder: (BuildContext
                                                                 context) =>
-                                                            modal(transaction),
+                                                            modal(
+                                                                user,
+                                                                expenses,
+                                                                index,
+                                                                context.read<
+                                                                    FirestoreCubit>(),
+                                                                state),
                                                       );
                                                     },
                                                   ),
@@ -253,7 +260,27 @@ class _HomePageState extends State<HomePage> {
                                                         .withOpacity(0.7),
                                                     icon: const Icon(
                                                         Icons.delete_forever),
-                                                    onPressed: () {},
+                                                    onPressed: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            alertDeleteDialog(
+                                                                context,
+                                                                context.read<
+                                                                    FirestoreCubit>(),
+                                                                user,
+                                                                transaction,
+                                                                index),
+                                                      );
+                                                      context
+                                                          .read<
+                                                              FirestoreCubit>()
+                                                          .deleteData(
+                                                              user,
+                                                              transaction,
+                                                              index);
+                                                    },
                                                   ),
                                                 ],
                                               ),
@@ -293,7 +320,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     );
                   } else {
-                    return const CircularProgressIndicator();
+                    return const Center(child: CircularProgressIndicator());
                   }
                 },
               ),

@@ -55,6 +55,7 @@ class _MainAppState extends State<MainApp> {
       },
       builder: (context, state) {
         return MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               if (state is AuthSuccess) {

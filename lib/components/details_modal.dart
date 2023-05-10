@@ -70,7 +70,7 @@ AlertDialog detailsModal(
   );
 }
 
-AlertDialog modal(User user, List<Expense> expenses, int index,
+AlertDialog editModal(User user, List<Expense> expenses, int index,
     FirestoreCubit firestore, FirestoreState state) {
   final _formKey = GlobalKey<FormState>();
   String _name = expenses[index].name;
@@ -80,7 +80,7 @@ AlertDialog modal(User user, List<Expense> expenses, int index,
 
   List<String> _types = [
     'Food',
-    'Transport',
+    'Transportation',
     'Healthcare',
     'Entertainment',
     'Household',
@@ -111,7 +111,7 @@ AlertDialog modal(User user, List<Expense> expenses, int index,
             ),
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Type'),
-              value: expenses[index].category,
+              value: _selectedType,
               items: _types.map((type) {
                 return DropdownMenuItem(
                   value: type,

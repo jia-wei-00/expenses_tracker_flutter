@@ -243,7 +243,7 @@ class _HomePageState extends State<HomePage> {
                                                         context: context,
                                                         builder: (BuildContext
                                                                 context) =>
-                                                            modal(
+                                                            editModal(
                                                                 user,
                                                                 expenses,
                                                                 index,
@@ -273,13 +273,13 @@ class _HomePageState extends State<HomePage> {
                                                                 transaction,
                                                                 index),
                                                       );
-                                                      context
-                                                          .read<
-                                                              FirestoreCubit>()
-                                                          .deleteData(
-                                                              user,
-                                                              transaction,
-                                                              index);
+                                                      // context
+                                                      //     .read<
+                                                      //         FirestoreCubit>()
+                                                      //     .deleteData(
+                                                      //         user,
+                                                      //         transaction,
+                                                      //         index);
                                                     },
                                                   ),
                                                 ],

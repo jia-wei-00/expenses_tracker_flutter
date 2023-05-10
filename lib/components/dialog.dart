@@ -46,10 +46,13 @@ AlertDialog alertDeleteDialog(BuildContext context, FirestoreCubit cubit,
           const SizedBox(width: 5),
           ElevatedButton(
             onPressed: () {
-              // cubit.logOut();
+              cubit.deleteData(user, transaction, index);
               Navigator.pop(context, 'Cancel');
             },
-            child: mediumFont('Logout'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: mediumFont('Confirm'),
           ),
         ],
       )

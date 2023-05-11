@@ -9,8 +9,10 @@ import 'package:expenses_tracker/pages/login_page.dart';
 import 'package:expenses_tracker/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +59,11 @@ class _MainAppState extends State<MainApp> {
       builder: (context, state) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
+          localizationsDelegates: const [
+            GlobalWidgetsLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            MonthYearPickerLocalizations.delegate,
+          ],
           home: BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               if (state is AuthSuccess) {

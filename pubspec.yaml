@@ -17,6 +17,8 @@ dependencies:
   google_fonts: ^4.0.4
   google_sign_in: ^6.1.0
   salomon_bottom_bar: ^3.3.2
+  # syncfusion_flutter_datepicker: ^21.2.4
+  month_year_picker: ^0.2.0+3
 
 dev_dependencies:
   flutter_test:

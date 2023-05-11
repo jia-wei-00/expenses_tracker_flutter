@@ -1,5 +1,4 @@
 import 'package:expenses_tracker/components/details_modal.dart';
-import 'package:expenses_tracker/components/dialog.dart';
 import 'package:expenses_tracker/components/divider.dart';
 import 'package:expenses_tracker/components/snackbar.dart';
 import 'package:expenses_tracker/components/text.dart';
@@ -8,6 +7,7 @@ import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -63,8 +63,45 @@ class _HistoryPageState extends State<HistoryPage> {
     super.dispose();
   }
 
+  // String CurrentDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
+  DateTime? _selected;
+
   @override
   Widget build(BuildContext context) {
+    // Future<void> getCurrent(BuildContext context) async {
+    //   final DateTime? date = await showDatePicker(
+    //       context: context,
+    //       initialDate: DateTime.now(),
+    //       // firstDate: DateTime(200),
+    //       // lastDate: DateTime(3000));
+    //       firstDate: DateTime.now().subtract(Duration(days: 365 * 2)),
+    //       lastDate: DateTime.now());
+    //   if (date != null) {
+    //     setState(() {
+    //       CurrentDate = DateFormat("yyyy-MM-dd").format(date);
+    //     });
+    //   }
+    // }
+
+    Future<void> _onPressed({
+      required BuildContext context,
+      String? locale,
+    }) async {
+      final localeObj = locale != null ? Locale(locale) : null;
+      final selected = await showMonthYearPicker(
+        context: context,
+        initialDate: _selected ?? DateTime.now(),
+        firstDate: DateTime(2022),
+        lastDate: DateTime.now(),
+        locale: localeObj,
+      );
+      if (selected != null) {
+        setState(() {
+          _selected = selected;
+        });
+      }
+    }
+
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final user = state is AuthSuccess ? state.user : null;
@@ -253,6 +290,14 @@ class _HistoryPageState extends State<HistoryPage> {
                           ),
                         ),
                         divider(),
+                        IconButton(
+                            onPressed: () {
+                              _onPressed(context: context);
+                            },
+                            icon: Icon(
+                              Icons.date_range,
+                              size: 30,
+                            ))
                       ],
                     );
                   }

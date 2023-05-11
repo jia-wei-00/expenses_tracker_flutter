@@ -1,6 +1,7 @@
 import 'package:expenses_tracker/components/details_modal.dart';
 import 'package:expenses_tracker/components/dialog.dart';
 import 'package:expenses_tracker/components/divider.dart';
+import 'package:expenses_tracker/components/snackbar.dart';
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
@@ -81,7 +82,13 @@ class _HomePageState extends State<HomePage> {
           child: Scaffold(
             body: Container(
               padding: const EdgeInsets.all(12),
-              child: BlocBuilder<FirestoreCubit, FirestoreState>(
+              child: BlocConsumer<FirestoreCubit, FirestoreState>(
+                listener: (context, state) {
+                  if (state is FirestoreSuccess) {
+                    snackBar(
+                        state.message, Colors.green, Colors.white, context);
+                  }
+                },
                 builder: (context, state) {
                   expenses = expensesBloc.state;
                   if (state is FirestoreLoading) {

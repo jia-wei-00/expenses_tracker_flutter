@@ -54,7 +54,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       bloc.setExpenses(payload);
 
-      emit(FirestoreRecordLoaded());
+      emit(FirestoreSuccess(message: "Fetch Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
@@ -86,7 +86,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           timestamp: expenses.timestamp);
 
       bloc.setExpenses(data_list);
-      emit(FirestoreRecordLoaded());
+      emit(FirestoreSuccess(message: "Update Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
@@ -105,7 +105,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       data_list.removeAt(index);
       bloc.setExpenses(data_list);
-      emit(FirestoreRecordLoaded());
+      emit(FirestoreSuccess(message: "Delete Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
@@ -137,45 +137,9 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       data_list.add(tmp);
       bloc.setExpenses(data_list);
-      emit(FirestoreRecordLoaded());
+      emit(FirestoreSuccess(message: "Add ${expenses.type} success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
   }
-
-// export function postRecord(payload) {
-//   return (dispatch) => {
-//     const id = toast.loading("Please wait...");
-//     dispatch(setLoading(true));
-
-//     db.collection("expense__tracker")
-//       .doc(payload.user)
-//       .collection(payload.date)
-//       .add({
-//         type: payload.type,
-//         name: payload.name,
-//         amount: payload.amount,
-//         category: payload.category,
-//         timestamp: payload.timestamp,
-//       })
-//       .then((success) => {
-//         toast.update(id, {
-//           render: "Successfully Add Data",
-//           type: "success",
-//           isLoading: false,
-//           autoClose: 5000,
-//         });
-//         dispatch(setLoading(false));
-//       })
-//       .catch((error) => {
-//         toast.update(id, {
-//           render: error.message,
-//           type: "error",
-//           isLoading: false,
-//           autoClose: 5000,
-//         });
-//         dispatch(setLoading(false));
-//       });
-//   };
-// }
 }

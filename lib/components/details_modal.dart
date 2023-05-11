@@ -92,8 +92,7 @@ AlertDialog editModal(User user, List<Expense> expenses, int index,
     title: bigFont("Edit Details"),
     content: Form(
       key: _formKey,
-      child: SizedBox(
-        height: 260,
+      child: IntrinsicHeight(
         child: Column(
           children: [
             TextFormField(
@@ -122,6 +121,12 @@ AlertDialog editModal(User user, List<Expense> expenses, int index,
               onChanged: (value) {
                 _selectedType = value!;
               },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please choose a type of $_type';
+                }
+                return null;
+              },
             ),
             TextFormField(
               initialValue: _amount.toString(),
@@ -152,18 +157,24 @@ AlertDialog editModal(User user, List<Expense> expenses, int index,
                 } else {
                   return ElevatedButton(
                     onPressed: () async {
-                      final tmp = Expense(
-                        id: expenses[index].id,
-                        amount: _amount.toString(),
-                        name: _name,
-                        type: _type,
-                        category: _selectedType,
-                        timestamp: expenses[index].timestamp,
-                      );
+                      if (_formKey.currentState!.validate()) {
+                        final tmp = Expense(
+                          id: expenses[index].id,
+                          amount: _amount.toString(),
+                          name: _name,
+                          type: _type,
+                          category: _selectedType,
+                          timestamp: expenses[index].timestamp,
+                        );
 
-                      await firestore.updateData(
-                          user, tmp, index, context.read<ExpensesBloc>());
-                      Navigator.pop(context, 'Cancel');
+                        await firestore.updateData(
+                          user,
+                          tmp,
+                          index,
+                          context.read<ExpensesBloc>(),
+                        );
+                        Navigator.pop(context, 'Cancel');
+                      }
                     },
                     child: const Text('Submit'),
                   );
@@ -190,8 +201,7 @@ AlertDialog addTransactionModal(
     title: bigFont(type == "expense" ? "Add Expenses" : "Add Income"),
     content: Form(
       key: _formKey,
-      child: SizedBox(
-        height: 260,
+      child: IntrinsicHeight(
         child: Column(
           children: [
             TextFormField(
@@ -210,7 +220,7 @@ AlertDialog addTransactionModal(
             ),
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Type'),
-              value: _selectedType,
+              // value: _selectedType,
               items: tmpList.map((type) {
                 return DropdownMenuItem(
                   value: type,
@@ -220,9 +230,14 @@ AlertDialog addTransactionModal(
               onChanged: (value) {
                 _selectedType = value!;
               },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please choose a type of $type';
+                }
+                return null;
+              },
             ),
             TextFormField(
-              initialValue: _amount.toString(),
               decoration: const InputDecoration(labelText: 'Amount'),
               keyboardType: TextInputType.number,
               onChanged: (value) => _amount = num.parse(value),
@@ -250,16 +265,18 @@ AlertDialog addTransactionModal(
                 } else {
                   return ElevatedButton(
                     onPressed: () async {
-                      final tmp = ExpenseNoID(
-                          amount: _amount.toString(),
-                          name: _name,
-                          type: type,
-                          category: _selectedType,
-                          timestamp: DateTime.now());
+                      if (_formKey.currentState!.validate()) {
+                        final tmp = ExpenseNoID(
+                            amount: _amount.toString(),
+                            name: _name,
+                            type: type,
+                            category: _selectedType,
+                            timestamp: DateTime.now());
 
-                      await firestore.addTransaction(
-                          user, tmp, context.read<ExpensesBloc>());
-                      Navigator.pop(context, 'Cancel');
+                        await firestore.addTransaction(
+                            user, tmp, context.read<ExpensesBloc>());
+                        Navigator.pop(context, 'Cancel');
+                      }
                     },
                     child: const Text('Submit'),
                   );

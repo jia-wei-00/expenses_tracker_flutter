@@ -1,3 +1,4 @@
+import 'package:expenses_tracker/components/charts/bar_chart.dart';
 import 'package:expenses_tracker/components/details_modal.dart';
 import 'package:expenses_tracker/components/divider.dart';
 import 'package:expenses_tracker/components/snackbar.dart';
@@ -289,6 +290,7 @@ class _HistoryPageState extends State<HistoryPage> {
                             },
                           ),
                         ),
+                        BarChartSample2(),
                         divider(),
                         IconButton(
                             onPressed: () {

@@ -63,7 +63,8 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> logOut(ExpensesBloc bloc) async {
+  Future<void> logOut(
+      ExpensesBloc bloc, ExpensesHistoryBloc historyBloc) async {
     emit(AuthLoading());
     try {
       //Sign out firebase
@@ -72,6 +73,7 @@ class AuthCubit extends Cubit<AuthState> {
       //Revoke Google access token
       await _googleSignIn.signOut();
       bloc.setExpenses([]);
+      historyBloc.setExpensesHistory([]);
 
       emit(AuthLogout());
     } catch (error) {

@@ -39,6 +39,9 @@ List<Map<String, dynamic>> calculation(List<Expense> expenses) {
         case "Living":
           living += num.parse(e.amount);
           break;
+        case "Household":
+          living += num.parse(e.amount);
+          break;
         case "Others":
           others += num.parse(e.amount);
           break;

@@ -8,6 +8,7 @@ import 'package:expenses_tracker/components/snackbar.dart';
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -59,6 +60,7 @@ class _HistoryPageState extends State<HistoryPage> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
   List<Expense> expenses = [];
+  String dropdownValue = 'All'; // set the initial value
 
   @override
   void dispose() {
@@ -68,7 +70,7 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   // String CurrentDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
-  DateTime? _selected;
+  DateTime _selected = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -87,14 +89,14 @@ class _HistoryPageState extends State<HistoryPage> {
     //   }
     // }
 
-    Future<void> _onPressed({
-      required BuildContext context,
-      String? locale,
-    }) async {
+    Future<void> _onPressed(
+        {required BuildContext context,
+        String? locale,
+        required User user}) async {
       final localeObj = locale != null ? Locale(locale) : null;
       final selected = await showMonthYearPicker(
         context: context,
-        initialDate: _selected ?? DateTime.now(),
+        initialDate: _selected,
         firstDate: DateTime(2022),
         lastDate: DateTime.now(),
         locale: localeObj,
@@ -103,19 +105,33 @@ class _HistoryPageState extends State<HistoryPage> {
         setState(() {
           _selected = selected;
         });
+
+        if (selected != DateTime.now()) {
+          print("here");
+
+          context.read<FirestoreCubit>().fetchHistoryData(
+              user,
+              context.read<ExpensesHistoryBloc>(),
+              DateFormat('MMMM yyyy').format(selected));
+        }
       }
     }
 
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final user = state is AuthSuccess ? state.user : null;
-        final expensesBloc = context.watch<ExpensesBloc>();
-        if (expensesBloc.state.isEmpty) {
-          context.read<FirestoreCubit>().fetchData(
-              user!,
-              context.read<ExpensesBloc>(),
-              context.read<ExpensesHistoryBloc>());
+        final expensesHistoryBloc = context.watch<ExpensesHistoryBloc>();
+        final runOnce = context.watch<RunOnce>();
+
+        if (expensesHistoryBloc.state.isEmpty) {
+          if (runOnce.state) {
+            context.read<FirestoreCubit>().fetchHistoryData(
+                user!,
+                context.read<ExpensesHistoryBloc>(),
+                DateFormat('MMMM yyyy').format(DateTime.now()));
+          }
         }
+
         return GestureDetector(
           onTap: () {
             // Unfocus the search input when the user taps outside
@@ -130,9 +146,13 @@ class _HistoryPageState extends State<HistoryPage> {
                     snackBar(
                         state.message, Colors.green, Colors.white, context);
                   }
+
+                  if (state is FirestoreError) {
+                    snackBar(state.error, Colors.red, Colors.white, context);
+                  }
                 },
                 builder: (context, state) {
-                  expenses = expensesBloc.state;
+                  expenses = expensesHistoryBloc.state;
                   if (state is FirestoreLoading) {
                     return const Center(child: CircularProgressIndicator());
                   } else {
@@ -141,15 +161,35 @@ class _HistoryPageState extends State<HistoryPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              bigFont("Balance"),
-                              const SizedBox(width: 5),
-                              mediumFont(
-                                  "(${DateFormat('MMMM yyyy').format(DateTime.now())})"),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      bigFont("Balance"),
+                                      const SizedBox(width: 5),
+                                      mediumFont(
+                                          "(${DateFormat('MMMM yyyy').format(expensesHistoryBloc.state[0].timestamp)})"),
+                                    ],
+                                  ),
+                                  mediumFont(
+                                      "RM${balance(expenses).toStringAsFixed(2)}"),
+                                ],
+                              ),
+                              IconButton(
+                                  onPressed: () {
+                                    _onPressed(context: context, user: user!);
+                                  },
+                                  icon: const Icon(
+                                    Icons.date_range_rounded,
+                                    size: 25,
+                                  ))
                             ],
                           ),
-                          mediumFont("RM${balance(expenses)}"),
+                          const SizedBox(height: 10),
                           Row(
                             children: [
                               Expanded(
@@ -163,7 +203,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                     children: [
                                       bigFont("EXPENSES", color: Colors.black),
                                       mediumFont(
-                                          "RM${expense(expenses) == null ? 0 : expense(expenses).toString()}",
+                                          "RM${expense(expenses) == null ? 0 : expense(expenses)!.toStringAsFixed(2)}",
                                           color: Colors.red),
                                     ],
                                   ),
@@ -182,7 +222,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                     children: [
                                       bigFont("INCOME", color: Colors.black),
                                       mediumFont(
-                                          "RM${income(expenses) == null ? 0 : income(expenses).toString()}",
+                                          "RM${income(expenses) == null ? 0 : income(expenses)!.toStringAsFixed(2)}",
                                           color: Colors.green),
                                     ],
                                   ),
@@ -201,7 +241,7 @@ class _HistoryPageState extends State<HistoryPage> {
                           const SizedBox(
                             height: 5,
                           ),
-                          const Chart(),
+                          Chart(expenses: expensesHistoryBloc.state),
                           Padding(
                             padding: const EdgeInsets.only(top: 5, bottom: 5),
                             child: Row(
@@ -239,12 +279,61 @@ class _HistoryPageState extends State<HistoryPage> {
                             ),
                           ),
                           divider(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Container(
+                                // decoration: BoxDecoration(
+                                //   border: Border.all(color: Colors.grey),
+                                //   borderRadius: BorderRadius.circular(10),
+                                // ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5),
+                                // margin: const EdgeInsets.symmetric(vertical: 8),
+                                child: DropdownButton<String>(
+                                  value: dropdownValue,
+                                  items: <String>[
+                                    'All',
+                                    'Food',
+                                    'Transportation',
+                                    'Healthcare',
+                                    'Entertainment',
+                                    'Household',
+                                    'Living',
+                                    'Salary',
+                                    'Others'
+                                  ].map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: smallFont(
+                                        value,
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      dropdownValue = newValue!;
+                                    });
+                                  },
+                                  dropdownColor: Colors.grey[800],
+                                ),
+                              ),
+                            ],
+                          ),
                           SizedBox(
                             height: 350,
                             child: ValueListenableBuilder(
                               valueListenable: _searchController,
                               builder: (BuildContext context, _, __) {
-                                var filteredExpenses = expenses
+                                var filteredCategory = expenses
+                                    .where((element) =>
+                                        dropdownValue.toLowerCase() == "all" ||
+                                        element.category.toLowerCase().contains(
+                                            dropdownValue.toLowerCase()))
+                                    .toList();
+
+                                var filteredExpenses = filteredCategory
                                     .where((element) =>
                                         element.name.toLowerCase().contains(
                                             _searchController.text
@@ -301,6 +390,9 @@ class _HistoryPageState extends State<HistoryPage> {
                                                     "RM${transaction.amount.toString()}",
                                                     color: Colors.black
                                                         .withOpacity(0.6)),
+                                                trailing: mediumFont(
+                                                    transaction.category,
+                                                    color: Colors.black54),
                                               ),
                                             ),
                                           ),
@@ -313,14 +405,6 @@ class _HistoryPageState extends State<HistoryPage> {
                             ),
                           ),
                           divider(),
-                          IconButton(
-                              onPressed: () {
-                                _onPressed(context: context);
-                              },
-                              icon: const Icon(
-                                Icons.date_range,
-                                size: 30,
-                              ))
                         ],
                       ),
                     );
@@ -336,7 +420,9 @@ class _HistoryPageState extends State<HistoryPage> {
 }
 
 class Chart extends StatefulWidget {
-  const Chart({Key? key}) : super(key: key);
+  final List<Expense> expenses;
+
+  const Chart({Key? key, required this.expenses}) : super(key: key);
 
   @override
   State<Chart> createState() => _ChartState();
@@ -347,6 +433,7 @@ class _ChartState extends State<Chart> {
 
   @override
   Widget build(BuildContext context) {
+    print(expense(widget.expenses));
     return Column(
       children: [
         Row(
@@ -379,7 +466,27 @@ class _ChartState extends State<Chart> {
             ),
           ],
         ),
-        expenseChart == true ? const ExpensesChart() : const IncomeChart(),
+        expenseChart == true
+            ? expense(widget.expenses) == null
+                ? const SizedBox(
+                    height: 298,
+                    child: Center(
+                      child: Text(
+                        "No data available",
+                      ),
+                    ),
+                  )
+                : const ExpensesChart()
+            : income(widget.expenses) != null
+                ? const IncomeChart()
+                : const SizedBox(
+                    height: 298,
+                    child: Center(
+                      child: Text(
+                        "No data available",
+                      ),
+                    ),
+                  ),
       ],
     );
   }

@@ -21,7 +21,10 @@ AlertDialog alertDialog(BuildContext context, AuthCubit cubit) {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              cubit.logOut(context.read<ExpensesBloc>());
+              cubit.logOut(
+                context.read<ExpensesBloc>(),
+                context.read<ExpensesHistoryBloc>(),
+              );
               Navigator.pop(context, 'Cancel');
             },
             child: mediumFont('Logout'),

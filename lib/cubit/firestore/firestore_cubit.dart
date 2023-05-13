@@ -23,6 +23,14 @@ class ExpensesHistoryBloc extends Cubit<List<Expense>> {
   }
 }
 
+class RunOnce extends Cubit<bool> {
+  RunOnce() : super(true);
+
+  void setRunOnce(bool set) {
+    emit(set);
+  }
+}
+
 class FirestoreCubit extends Cubit<FirestoreState> {
   FirestoreCubit() : super(FirestoreInitial());
 
@@ -47,24 +55,28 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           .orderBy("timestamp", descending: true)
           .get();
 
-      final List<Expense> payload = querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        return Expense(
-          id: doc.id,
-          amount: data['amount'].toString(),
-          name: data['name'],
-          type: data['type'],
-          category: data['category'],
-          timestamp: (data['timestamp'] as Timestamp).toDate(),
-        );
-      }).toList();
+      if (querySnapshot.size != 0) {
+        final List<Expense> payload = querySnapshot.docs.map((doc) {
+          final data = doc.data();
+          return Expense(
+            id: doc.id,
+            amount: data['amount'].toString(),
+            name: data['name'],
+            type: data['type'],
+            category: data['category'],
+            timestamp: (data['timestamp'] as Timestamp).toDate(),
+          );
+        }).toList();
 
-      data_list = payload;
+        data_list = payload;
 
-      bloc.setExpenses(payload);
-      historyBloc.setExpensesHistory(payload);
+        bloc.setExpenses(payload);
+        historyBloc.setExpensesHistory(payload);
 
-      emit(FirestoreSuccess(message: "Fetch Success!"));
+        emit(FirestoreSuccess(message: "Fetch Success!"));
+      } else {
+        emit(FirestoreError(error: "Empty Data"));
+      }
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
@@ -148,6 +160,42 @@ class FirestoreCubit extends Cubit<FirestoreState> {
       data_list.add(tmp);
       bloc.setExpenses(data_list);
       emit(FirestoreSuccess(message: "Add ${expenses.type} success!"));
+    } catch (e) {
+      emit(FirestoreError(error: e.toString()));
+    }
+  }
+
+  Future<void> fetchHistoryData(
+      User user, ExpensesHistoryBloc historyBloc, String month) async {
+    emit(FirestoreLoading());
+
+    try {
+      final querySnapshot = await db
+          .collection("expense__tracker")
+          .doc(user.email)
+          .collection(month)
+          .orderBy("timestamp", descending: true)
+          .get();
+
+      if (querySnapshot.size != 0) {
+        final List<Expense> payload = querySnapshot.docs.map((doc) {
+          final data = doc.data();
+          return Expense(
+            id: doc.id,
+            amount: data['amount'].toString(),
+            name: data['name'],
+            type: data['type'],
+            category: data['category'],
+            timestamp: (data['timestamp'] as Timestamp).toDate(),
+          );
+        }).toList();
+
+        historyBloc.setExpensesHistory(payload);
+
+        emit(FirestoreSuccess(message: "Fetch Success!"));
+      } else {
+        emit(FirestoreError(error: "Empty data for $month"));
+      }
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }

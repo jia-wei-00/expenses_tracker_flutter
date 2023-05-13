@@ -133,34 +133,24 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               SizedBox(
                                 width: 220,
-                                child: state is AuthSuccess
-                                    ? ElevatedButton(
-                                        onPressed: () => context
-                                            .read<AuthCubit>()
-                                            .logOut(
-                                                context.read<ExpensesBloc>()),
-                                        child: const Text("Logout"),
-                                      )
-                                    : ElevatedButton(
-                                        onPressed: () => context
-                                            .read<AuthCubit>()
-                                            .googleSignIn(),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Image(
-                                              image: AssetImage(
-                                                  'assets/images/google.png'),
-                                              width: 15,
-                                            ),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            Text('Sign in with Google'),
-                                          ],
-                                        ),
+                                child: ElevatedButton(
+                                  onPressed: () =>
+                                      context.read<AuthCubit>().googleSignIn(),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      Image(
+                                        image: AssetImage(
+                                            'assets/images/google.png'),
+                                        width: 15,
                                       ),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text('Sign in with Google'),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
                           ),

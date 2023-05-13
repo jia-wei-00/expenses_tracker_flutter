@@ -26,6 +26,7 @@ Future<void> main() async {
         BlocProvider(create: (context) => AuthCubit()),
         BlocProvider(create: (context) => FirestoreCubit()),
         BlocProvider(create: (context) => ExpensesBloc()),
+        BlocProvider(create: (context) => ExpensesHistoryBloc()),
       ],
       child: const MainApp(),
     ),

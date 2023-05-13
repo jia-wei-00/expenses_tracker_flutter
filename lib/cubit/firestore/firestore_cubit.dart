@@ -15,6 +15,14 @@ class ExpensesBloc extends Cubit<List<Expense>> {
   }
 }
 
+class ExpensesHistoryBloc extends Cubit<List<Expense>> {
+  ExpensesHistoryBloc() : super([]);
+
+  void setExpensesHistory(List<Expense> expenses) {
+    emit(expenses);
+  }
+}
+
 class FirestoreCubit extends Cubit<FirestoreState> {
   FirestoreCubit() : super(FirestoreInitial());
 
@@ -27,7 +35,8 @@ class FirestoreCubit extends Cubit<FirestoreState> {
     return DateFormat('MMMM yyyy').format(now);
   }
 
-  Future<void> fetchData(User user, ExpensesBloc bloc) async {
+  Future<void> fetchData(
+      User user, ExpensesBloc bloc, ExpensesHistoryBloc historyBloc) async {
     emit(FirestoreLoading());
 
     try {
@@ -53,6 +62,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
       data_list = payload;
 
       bloc.setExpenses(payload);
+      historyBloc.setExpensesHistory(payload);
 
       emit(FirestoreSuccess(message: "Fetch Success!"));
     } catch (e) {

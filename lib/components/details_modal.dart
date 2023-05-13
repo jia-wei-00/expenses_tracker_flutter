@@ -12,6 +12,7 @@ List<String> _typesExpense = [
   'Healthcare',
   'Entertainment',
   'Household',
+  'Living',
   'Others'
 ];
 

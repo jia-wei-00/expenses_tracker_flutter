@@ -6,7 +6,7 @@ ThemeData buildTheme(brightness) {
 
   return baseTheme.copyWith(
     textTheme: GoogleFonts.poppinsTextTheme(baseTheme.textTheme),
-    primaryColor: Colors.black,
+    primaryColor: Colors.white,
     textButtonTheme: TextButtonThemeData(
       style: ButtonStyle(
         foregroundColor: MaterialStateProperty.all<Color>(Colors.black),

@@ -5,11 +5,11 @@ import 'package:expenses_tracker/constant/page_constant.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
 import 'package:expenses_tracker/cubit/route/route_cubit.dart';
+import 'package:expenses_tracker/cubit/todo/todo_cubit.dart';
 import 'package:expenses_tracker/pages/login_page.dart';
 import 'package:expenses_tracker/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:month_year_picker/month_year_picker.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -28,6 +28,8 @@ Future<void> main() async {
         BlocProvider(create: (context) => ExpensesBloc()),
         BlocProvider(create: (context) => ExpensesHistoryBloc()),
         BlocProvider(create: (context) => RunOnce()),
+        BlocProvider(create: (context) => TodoCubit()),
+        BlocProvider(create: (context) => TodoBloc()),
       ],
       child: const MainApp(),
     ),
@@ -64,7 +66,6 @@ class _MainAppState extends State<MainApp> {
           localizationsDelegates: const [
             GlobalWidgetsLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
-            MonthYearPickerLocalizations.delegate,
           ],
           home: BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {

@@ -1,6 +1,7 @@
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
+import 'package:expenses_tracker/cubit/todo/todo_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -276,6 +277,63 @@ AlertDialog addTransactionModal(
 
                         await firestore.addTransaction(
                             user, tmp, context.read<ExpensesBloc>());
+                        Navigator.pop(context, 'Cancel');
+                      }
+                    },
+                    child: const Text('Submit'),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+AlertDialog addTodoModal(User user, TodoCubit todoCubit, TodoBloc bloc) {
+  final _formKey = GlobalKey<FormState>();
+  String _todo = "";
+
+  return AlertDialog(
+    title: bigFont("Add Todo"),
+    content: Form(
+      key: _formKey,
+      child: IntrinsicHeight(
+        child: Column(
+          children: [
+            TextFormField(
+              // maxLines: 5,
+              initialValue: _todo,
+              decoration: const InputDecoration(labelText: 'Todo'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your todo';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                // Save the form value
+                _todo = value;
+              },
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            BlocBuilder<TodoCubit, TodoState>(
+              builder: (context, state) {
+                if (state is TodoLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        final Todo todo =
+                            Todo(text: _todo, timestamp: DateTime.now());
+                        await todoCubit.addTodo(user, bloc, todo);
                         Navigator.pop(context, 'Cancel');
                       }
                     },

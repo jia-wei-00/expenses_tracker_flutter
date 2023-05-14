@@ -148,7 +148,7 @@ class ExpensesChartState extends State {
   List<PieChartSectionData> showingSections(List data) {
     return List.generate(data.length, (i) {
       final isTouched = i == touchedIndex;
-      final fontSize = isTouched ? 20.0 : 16.0;
+      final fontSize = isTouched ? 16.0 : 12.0;
       final radius = isTouched ? 110.0 : 100.0;
       final widgetSize = isTouched ? 55.0 : 40.0;
       const shadows = [Shadow(color: Colors.black, blurRadius: 2)];

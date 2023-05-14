@@ -23,11 +23,7 @@ class FirestoreError extends FirestoreState {
   FirestoreError({required this.error});
 }
 
-class FirestoreRecordLoaded extends FirestoreState {
-  // final List<Expense> expenses;
-
-  // FirestoreRecordLoaded({required this.expenses});
-}
+class FirestoreRecordLoaded extends FirestoreState {}
 
 class Expense {
   final String id;

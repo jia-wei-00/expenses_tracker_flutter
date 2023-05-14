@@ -12,7 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:month_year_picker/month_year_picker.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -69,7 +69,6 @@ class _HistoryPageState extends State<HistoryPage> {
     super.dispose();
   }
 
-  // String CurrentDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
   DateTime _selected = DateTime.now();
 
   @override
@@ -91,12 +90,19 @@ class _HistoryPageState extends State<HistoryPage> {
 
     Future<void> _onPressed(
         {required BuildContext context,
+        required DateTime date,
         String? locale,
         required User user}) async {
       final localeObj = locale != null ? Locale(locale) : null;
-      final selected = await showMonthYearPicker(
+      final selected = await showMonthPicker(
         context: context,
-        initialDate: _selected,
+        initialDate: date,
+        headerColor: Colors.black,
+        unselectedMonthTextColor: Colors.white,
+        selectedMonthBackgroundColor: Colors.white,
+        dismissible: true,
+        cancelWidget: mediumFont("Cancel"),
+        confirmWidget: mediumFont("OK"),
         firstDate: DateTime(2022),
         lastDate: DateTime.now(),
         locale: localeObj,
@@ -106,9 +112,8 @@ class _HistoryPageState extends State<HistoryPage> {
           _selected = selected;
         });
 
-        if (selected != DateTime.now()) {
-          print("here");
-
+        if (DateFormat('MMMM yyyy').format(selected) !=
+            DateFormat('MMMM yyyy').format(date)) {
           context.read<FirestoreCubit>().fetchHistoryData(
               user,
               context.read<ExpensesHistoryBloc>(),
@@ -181,7 +186,11 @@ class _HistoryPageState extends State<HistoryPage> {
                               ),
                               IconButton(
                                   onPressed: () {
-                                    _onPressed(context: context, user: user!);
+                                    _onPressed(
+                                        context: context,
+                                        user: user!,
+                                        date: expensesHistoryBloc
+                                            .state[0].timestamp);
                                   },
                                   icon: const Icon(
                                     Icons.date_range_rounded,
@@ -279,6 +288,8 @@ class _HistoryPageState extends State<HistoryPage> {
                             ),
                           ),
                           divider(),
+
+                          //Dropdown for filter category
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -433,7 +444,6 @@ class _ChartState extends State<Chart> {
 
   @override
   Widget build(BuildContext context) {
-    print(expense(widget.expenses));
     return Column(
       children: [
         Row(
@@ -468,10 +478,10 @@ class _ChartState extends State<Chart> {
         ),
         expenseChart == true
             ? expense(widget.expenses) == null
-                ? const SizedBox(
+                ? SizedBox(
                     height: 298,
                     child: Center(
-                      child: Text(
+                      child: mediumFont(
                         "No data available",
                       ),
                     ),
@@ -479,10 +489,10 @@ class _ChartState extends State<Chart> {
                 : const ExpensesChart()
             : income(widget.expenses) != null
                 ? const IncomeChart()
-                : const SizedBox(
+                : SizedBox(
                     height: 298,
                     child: Center(
-                      child: Text(
+                      child: mediumFont(
                         "No data available",
                       ),
                     ),

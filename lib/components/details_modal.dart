@@ -79,6 +79,62 @@ AlertDialog detailsModal(
   );
 }
 
+AlertDialog todoModal(BuildContext context, AuthCubit cubit, Todo expenses) {
+  List<Map<String, String>> tableData = [
+    {'title': 'Description', 'value': expenses.text},
+    {
+      'title': 'Date',
+      'value': DateFormat('EEEE, MMMM d, y h:mm a').format(expenses.timestamp)
+    },
+  ];
+
+  return AlertDialog(
+    title: bigFont('Todo Details'),
+    content: DataTable(
+      dividerThickness: 1.5,
+      headingRowHeight: 10,
+      horizontalMargin: 0,
+      // dataRowHeight: 100,
+      columns: const [
+        DataColumn(label: SizedBox()), // Empty column for titles
+        DataColumn(label: SizedBox()),
+      ],
+      // crossAxisAlignment: CrossAxisAlignment.start,
+      rows: tableData.map((entry) {
+        final title = entry['title']!;
+        final value = entry['value']!;
+
+        return DataRow(
+          cells: [
+            DataCell(
+              Container(
+                color: Colors.black,
+                width: 100,
+                padding: const EdgeInsets.all(8.0),
+                alignment: Alignment.centerLeft,
+                child: smallFont(title, color: Colors.white),
+              ),
+            ),
+            DataCell(
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                alignment: Alignment.centerLeft,
+                child: smallFont(value, color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      }).toList(),
+    ),
+    actions: <Widget>[
+      ElevatedButton(
+        onPressed: () => Navigator.pop(context, 'Cancel'),
+        child: mediumFont('Cancel'),
+      ),
+    ],
+  );
+}
+
 AlertDialog editModal(User user, List<Expense> expenses, int index,
     FirestoreCubit firestore, FirestoreState state) {
   final _formKey = GlobalKey<FormState>();
@@ -175,6 +231,65 @@ AlertDialog editModal(User user, List<Expense> expenses, int index,
                           index,
                           context.read<ExpensesBloc>(),
                         );
+                        Navigator.pop(context, 'Cancel');
+                      }
+                    },
+                    child: const Text('Submit'),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+AlertDialog editTodoModal(
+    User user, Todo todo, int index, TodoCubit todoCubit) {
+  final _formKey = GlobalKey<FormState>();
+  String _text = todo.text;
+  DateTime _timestamp = todo.timestamp;
+
+  return AlertDialog(
+    title: bigFont("Edit Details"),
+    content: Form(
+      key: _formKey,
+      child: IntrinsicHeight(
+        child: Column(
+          children: [
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Todo'),
+              initialValue: todo.text,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your todo';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                // Save the form value
+                _text = value;
+              },
+            ),
+            BlocBuilder<FirestoreCubit, FirestoreState>(
+              builder: (context, state) {
+                if (state is TodoLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        final tmp = Todo(
+                          text: _text,
+                          timestamp: todo.timestamp,
+                        );
+
+                        await todoCubit.editTodo(
+                            user, context.read<TodoBloc>(), tmp, index);
                         Navigator.pop(context, 'Cancel');
                       }
                     },

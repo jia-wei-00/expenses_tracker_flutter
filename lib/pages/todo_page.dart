@@ -129,14 +129,14 @@ class _TodoPageState extends State<TodoPage> {
                                   InkWell(
                                     key: ValueKey(index),
                                     onTap: () {
-                                      // showDialog(
-                                      //   context: context,
-                                      //   builder: (BuildContext context) =>
-                                      //       detailsModal(
-                                      //           context,
-                                      //           context.read<AuthCubit>(),
-                                      //           todo[index]),
-                                      // );
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) =>
+                                            todoModal(
+                                                context,
+                                                context.read<AuthCubit>(),
+                                                todo[index]),
+                                      );
                                     },
                                     child: ClipRRect(
                                       borderRadius: const BorderRadius.all(
@@ -192,18 +192,18 @@ class _TodoPageState extends State<TodoPage> {
                                                       .withOpacity(0.7),
                                                   icon: const Icon(Icons.edit),
                                                   onPressed: () {
-                                                    // showDialog(
-                                                    //   context: context,
-                                                    //   builder: (BuildContext
-                                                    //           context) =>
-                                                    //       editModal(
-                                                    //           user!,
-                                                    //           todo,
-                                                    //           index,
-                                                    //           context.read<
-                                                    //               FirestoreCubit>(),
-                                                    //           state),
-                                                    // );
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                              context) =>
+                                                          editTodoModal(
+                                                        user!,
+                                                        todo[index],
+                                                        index,
+                                                        context
+                                                            .read<TodoCubit>(),
+                                                      ),
+                                                    );
                                                   },
                                                 ),
                                                 IconButton(

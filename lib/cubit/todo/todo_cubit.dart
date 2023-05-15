@@ -114,6 +114,30 @@ class TodoCubit extends Cubit<TodoState> {
     }
   }
 
+  Future<void> editTodo(User user, TodoBloc bloc, Todo todo, int index) async {
+    emit(TodoLoading());
+
+    try {
+      final docRef = await db
+          .collection("expense__tracker")
+          .doc(user.email)
+          .collection("todo__list")
+          .doc("todo__array");
+
+      _todo[index] = todo;
+
+      // Convert the list of Todo objects to a list of JSON objects
+      final jsonList = _todo.map((todo) => todo.toJson()).toList();
+
+      await docRef.update({"todo__array": jsonList});
+
+      bloc.setTodo(_todo);
+      emit(TodoSuccess(message: "Updated Successfully"));
+    } catch (e) {
+      emit(TodoFailed(message: e.toString()));
+    }
+  }
+
   Future<void> deleteTodo(User user, TodoBloc bloc, int index) async {
     emit(TodoLoading());
 

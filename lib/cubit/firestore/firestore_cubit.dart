@@ -166,7 +166,12 @@ class FirestoreCubit extends Cubit<FirestoreState> {
   }
 
   Future<void> fetchHistoryData(
-      User user, ExpensesHistoryBloc historyBloc, String month) async {
+      User user,
+      ExpensesBloc bloc,
+      ExpensesHistoryBloc historyBloc,
+      String month,
+      bool runOnce,
+      RunOnce setRunOnce) async {
     emit(FirestoreLoading());
 
     try {
@@ -189,6 +194,13 @@ class FirestoreCubit extends Cubit<FirestoreState> {
             timestamp: (data['timestamp'] as Timestamp).toDate(),
           );
         }).toList();
+
+        if (runOnce) {
+          data_list = payload;
+          bloc.setExpenses(payload);
+
+          setRunOnce.setRunOnce(false);
+        }
 
         historyBloc.setExpensesHistory(payload);
 

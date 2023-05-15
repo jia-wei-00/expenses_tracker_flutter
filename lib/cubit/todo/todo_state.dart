@@ -18,3 +18,5 @@ class TodoSuccess extends TodoState {
 }
 
 class TodoLoading extends TodoState {}
+
+class TodoSuccessReorder extends TodoState {}

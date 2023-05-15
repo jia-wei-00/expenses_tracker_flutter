@@ -69,6 +69,7 @@ class _HomePageState extends State<HomePage> {
       builder: (context, state) {
         final user = state is AuthSuccess ? state.user : null;
         final expensesBloc = context.watch<ExpensesBloc>();
+
         if (expensesBloc.state.isEmpty) {
           context.read<FirestoreCubit>().fetchData(
               user!,
@@ -107,7 +108,7 @@ class _HomePageState extends State<HomePage> {
                                 "(${DateFormat('MMMM yyyy').format(DateTime.now())})"),
                           ],
                         ),
-                        mediumFont("RM${balance(expenses)}"),
+                        mediumFont("RM${balance(expenses).toStringAsFixed(2)}"),
                         Row(
                           children: [
                             Expanded(

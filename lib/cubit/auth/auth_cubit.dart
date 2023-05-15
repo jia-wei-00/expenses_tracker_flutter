@@ -1,4 +1,5 @@
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
+import 'package:expenses_tracker/cubit/todo/todo_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bloc/bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -63,8 +64,8 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> logOut(
-      ExpensesBloc bloc, ExpensesHistoryBloc historyBloc) async {
+  Future<void> logOut(ExpensesBloc bloc, ExpensesHistoryBloc historyBloc,
+      TodoBloc todoBloc) async {
     emit(AuthLoading());
     try {
       //Sign out firebase
@@ -74,6 +75,7 @@ class AuthCubit extends Cubit<AuthState> {
       await _googleSignIn.signOut();
       bloc.setExpenses([]);
       historyBloc.setExpensesHistory([]);
+      todoBloc.setTodo([]);
 
       emit(AuthLogout());
     } catch (error) {

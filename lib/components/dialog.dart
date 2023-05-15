@@ -25,6 +25,7 @@ AlertDialog alertDialog(BuildContext context, AuthCubit cubit) {
               cubit.logOut(
                 context.read<ExpensesBloc>(),
                 context.read<ExpensesHistoryBloc>(),
+                context.read<TodoBloc>(),
               );
               Navigator.pop(context, 'Cancel');
             },

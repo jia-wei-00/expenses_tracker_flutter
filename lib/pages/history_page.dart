@@ -8,6 +8,7 @@ import 'package:expenses_tracker/components/snackbar.dart';
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
+import 'package:expenses_tracker/cubit/todo/todo_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -91,6 +92,7 @@ class _HistoryPageState extends State<HistoryPage> {
     Future<void> _onPressed(
         {required BuildContext context,
         required DateTime date,
+        required bool runOnce,
         String? locale,
         required User user}) async {
       final localeObj = locale != null ? Locale(locale) : null;
@@ -116,8 +118,11 @@ class _HistoryPageState extends State<HistoryPage> {
             DateFormat('MMMM yyyy').format(date)) {
           context.read<FirestoreCubit>().fetchHistoryData(
               user,
+              context.read<ExpensesBloc>(),
               context.read<ExpensesHistoryBloc>(),
-              DateFormat('MMMM yyyy').format(selected));
+              DateFormat('MMMM yyyy').format(selected),
+              runOnce,
+              context.read<RunOnce>());
         }
       }
     }
@@ -126,14 +131,17 @@ class _HistoryPageState extends State<HistoryPage> {
       builder: (context, state) {
         final user = state is AuthSuccess ? state.user : null;
         final expensesHistoryBloc = context.watch<ExpensesHistoryBloc>();
-        final runOnce = context.watch<RunOnce>();
+        final runOnce = context.watch<RunOnce>().state;
 
         if (expensesHistoryBloc.state.isEmpty) {
-          if (runOnce.state) {
+          if (runOnce) {
             context.read<FirestoreCubit>().fetchHistoryData(
                 user!,
+                context.read<ExpensesBloc>(),
                 context.read<ExpensesHistoryBloc>(),
-                DateFormat('MMMM yyyy').format(DateTime.now()));
+                DateFormat('MMMM yyyy').format(DateTime.now()),
+                runOnce,
+                context.read<RunOnce>());
           }
         }
 
@@ -190,7 +198,8 @@ class _HistoryPageState extends State<HistoryPage> {
                                         context: context,
                                         user: user!,
                                         date: expensesHistoryBloc
-                                            .state[0].timestamp);
+                                            .state[0].timestamp,
+                                        runOnce: runOnce);
                                   },
                                   icon: const Icon(
                                     Icons.date_range_rounded,

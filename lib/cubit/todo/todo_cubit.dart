@@ -108,7 +108,7 @@ class TodoCubit extends Cubit<TodoState> {
       await docRef.update({"todo__array": jsonList});
 
       bloc.setTodo(_todo);
-      emit(TodoSuccess(message: "Updated Successfully"));
+      emit(TodoSuccessReorder());
     } catch (e) {
       emit(TodoFailed(message: e.toString()));
     }

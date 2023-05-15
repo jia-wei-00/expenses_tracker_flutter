@@ -13,6 +13,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,6 +94,7 @@ class _MainAppState extends State<MainApp> {
             },
           ),
           theme: buildTheme(Brightness.dark),
+          builder: EasyLoading.init(),
         );
       },
     );

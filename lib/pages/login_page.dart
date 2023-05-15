@@ -4,6 +4,7 @@ import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 /// Page is login page
 class LoginPage extends StatefulWidget {
@@ -37,7 +38,16 @@ class _LoginPageState extends State<LoginPage> {
       child: SingleChildScrollView(
         child: BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state) {
+            if (state is AuthLoading) {
+              EasyLoading.show(status: 'loading...');
+            }
+
+            if (state is AuthSuccess) {
+              EasyLoading.dismiss();
+            }
+
             if (state is AuthFailed) {
+              EasyLoading.dismiss();
               snackBar(state.error, Colors.red, Colors.white, context);
             }
           },

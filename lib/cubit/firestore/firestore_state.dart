@@ -12,9 +12,9 @@ class FirestoreUpdateLoading extends FirestoreState {}
 class FirestoreUpdateSuccess extends FirestoreState {}
 
 class FirestoreSuccess extends FirestoreState {
-  final String message;
+  final String? message;
 
-  FirestoreSuccess({required this.message});
+  FirestoreSuccess([this.message]);
 }
 
 class FirestoreError extends FirestoreState {

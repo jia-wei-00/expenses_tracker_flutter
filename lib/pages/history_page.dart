@@ -12,6 +12,7 @@ import 'package:expenses_tracker/cubit/todo/todo_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 
@@ -155,280 +156,279 @@ class _HistoryPageState extends State<HistoryPage> {
               padding: const EdgeInsets.all(12),
               child: BlocConsumer<FirestoreCubit, FirestoreState>(
                 listener: (context, state) {
+                  if (state is FirestoreLoading) {
+                    EasyLoading.show(status: 'loading...');
+                  }
+
                   if (state is FirestoreSuccess) {
-                    snackBar(
-                        state.message, Colors.green, Colors.white, context);
+                    EasyLoading.dismiss();
+                    // snackBar(
+                    //     state.message, Colors.green, Colors.white, context);
                   }
 
                   if (state is FirestoreError) {
+                    EasyLoading.dismiss();
                     snackBar(state.error, Colors.red, Colors.white, context);
                   }
                 },
                 builder: (context, state) {
                   expenses = expensesHistoryBloc.state;
-                  if (state is FirestoreLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else {
-                    return SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      bigFont("Balance"),
-                                      const SizedBox(width: 5),
-                                      mediumFont(
-                                          "(${DateFormat('MMMM yyyy').format(expensesHistoryBloc.state[0].timestamp)})"),
-                                    ],
-                                  ),
-                                  mediumFont(
-                                      "RM${balance(expenses).toStringAsFixed(2)}"),
-                                ],
-                              ),
-                              IconButton(
-                                  onPressed: () {
-                                    _onPressed(
-                                        context: context,
-                                        user: user!,
-                                        date: expensesHistoryBloc
-                                            .state[0].timestamp,
-                                        runOnce: runOnce);
-                                  },
-                                  icon: const Icon(
-                                    Icons.date_range_rounded,
-                                    size: 25,
-                                  ))
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      bigFont("EXPENSES", color: Colors.black),
-                                      mediumFont(
-                                          "RM${expense(expenses) == null ? 0 : expense(expenses)!.toStringAsFixed(2)}",
-                                          color: Colors.red),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  margin: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      bigFont("INCOME", color: Colors.black),
-                                      mediumFont(
-                                          "RM${income(expenses) == null ? 0 : income(expenses)!.toStringAsFixed(2)}",
-                                          color: Colors.green),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
 
-                          // BarChartSample2(),
-                          // LineChartSample2(),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          mediumFont("Chart"),
-                          divider(),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          Chart(expenses: expensesHistoryBloc.state),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5, bottom: 5),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                mediumFont("History"),
-                                SizedBox(
-                                  height: 35,
-                                  width: 200, // Set the desired width here
-                                  child: Expanded(
-                                    child: TextField(
-                                      focusNode: _focusNode,
-                                      controller: _searchController,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Search...',
-                                        contentPadding:
-                                            EdgeInsets.only(bottom: 3),
-                                        hintStyle: TextStyle(fontSize: 13),
-                                        prefixIcon: Icon(
-                                          Icons.search,
-                                          size: 20,
-                                          color: Colors.white,
-                                        ),
-                                        prefixIconConstraints: BoxConstraints(
-                                          minWidth: 30,
-                                          minHeight: 40,
-                                        ),
-                                      ),
-                                      style: const TextStyle(fontSize: 15),
-                                    ),
-                                  ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    bigFont("Balance"),
+                                    const SizedBox(width: 5),
+                                    mediumFont(state is! FirestoreLoading
+                                        ? "(${DateFormat('MMMM yyyy').format(DateTime.now())})"
+                                        : "(${DateFormat('MMMM yyyy').format(expensesHistoryBloc.state[0].timestamp)})")
+                                  ],
                                 ),
+                                mediumFont(
+                                    "RM${balance(expenses).toStringAsFixed(2)}"),
                               ],
                             ),
-                          ),
-                          divider(),
+                            IconButton(
+                                onPressed: () {
+                                  _onPressed(
+                                      context: context,
+                                      user: user!,
+                                      date: expensesHistoryBloc
+                                          .state[0].timestamp,
+                                      runOnce: runOnce);
+                                },
+                                icon: const Icon(
+                                  Icons.date_range_rounded,
+                                  size: 25,
+                                ))
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(16.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Column(
+                                  children: [
+                                    bigFont("EXPENSES", color: Colors.black),
+                                    mediumFont(
+                                        "RM${expense(expenses) == null ? 0 : expense(expenses)!.toStringAsFixed(2)}",
+                                        color: Colors.red),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(16.0),
+                                margin: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Column(
+                                  children: [
+                                    bigFont("INCOME", color: Colors.black),
+                                    mediumFont(
+                                        "RM${income(expenses) == null ? 0 : income(expenses)!.toStringAsFixed(2)}",
+                                        color: Colors.green),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
 
-                          //Dropdown for filter category
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                        // BarChartSample2(),
+                        // LineChartSample2(),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        mediumFont("Chart"),
+                        divider(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Chart(expenses: expensesHistoryBloc.state),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5, bottom: 5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Container(
-                                // decoration: BoxDecoration(
-                                //   border: Border.all(color: Colors.grey),
-                                //   borderRadius: BorderRadius.circular(10),
-                                // ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 5),
-                                // margin: const EdgeInsets.symmetric(vertical: 8),
-                                child: DropdownButton<String>(
-                                  value: dropdownValue,
-                                  items: <String>[
-                                    'All',
-                                    'Food',
-                                    'Transportation',
-                                    'Healthcare',
-                                    'Entertainment',
-                                    'Household',
-                                    'Living',
-                                    'Salary',
-                                    'Others'
-                                  ].map<DropdownMenuItem<String>>(
-                                      (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: smallFont(
-                                        value,
+                              mediumFont("History"),
+                              SizedBox(
+                                height: 35,
+                                width: 200, // Set the desired width here
+                                child: Expanded(
+                                  child: TextField(
+                                    focusNode: _focusNode,
+                                    controller: _searchController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Search...',
+                                      contentPadding:
+                                          EdgeInsets.only(bottom: 3),
+                                      hintStyle: TextStyle(fontSize: 13),
+                                      prefixIcon: Icon(
+                                        Icons.search,
+                                        size: 20,
+                                        color: Colors.white,
                                       ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      dropdownValue = newValue!;
-                                    });
-                                  },
-                                  dropdownColor: Colors.grey[800],
+                                      prefixIconConstraints: BoxConstraints(
+                                        minWidth: 30,
+                                        minHeight: 40,
+                                      ),
+                                    ),
+                                    style: const TextStyle(fontSize: 15),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(
-                            height: 350,
-                            child: ValueListenableBuilder(
-                              valueListenable: _searchController,
-                              builder: (BuildContext context, _, __) {
-                                var filteredCategory = expenses
-                                    .where((element) =>
-                                        dropdownValue.toLowerCase() == "all" ||
-                                        element.category.toLowerCase().contains(
-                                            dropdownValue.toLowerCase()))
-                                    .toList();
+                        ),
+                        divider(),
 
-                                var filteredExpenses = filteredCategory
-                                    .where((element) =>
-                                        element.name.toLowerCase().contains(
-                                            _searchController.text
-                                                .toLowerCase()) ||
-                                        element.amount.contains(
-                                            _searchController.text
-                                                .toLowerCase()))
-                                    .toList();
+                        //Dropdown for filter category
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Container(
+                              // decoration: BoxDecoration(
+                              //   border: Border.all(color: Colors.grey),
+                              //   borderRadius: BorderRadius.circular(10),
+                              // ),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 5),
+                              // margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: DropdownButton<String>(
+                                value: dropdownValue,
+                                items: <String>[
+                                  'All',
+                                  'Food',
+                                  'Transportation',
+                                  'Healthcare',
+                                  'Entertainment',
+                                  'Household',
+                                  'Living',
+                                  'Salary',
+                                  'Others'
+                                ].map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: smallFont(
+                                      value,
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    dropdownValue = newValue!;
+                                  });
+                                },
+                                dropdownColor: Colors.grey[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 350,
+                          child: ValueListenableBuilder(
+                            valueListenable: _searchController,
+                            builder: (BuildContext context, _, __) {
+                              var filteredCategory = expenses
+                                  .where((element) =>
+                                      dropdownValue.toLowerCase() == "all" ||
+                                      element.category.toLowerCase().contains(
+                                          dropdownValue.toLowerCase()))
+                                  .toList();
 
-                                return ListView.builder(
-                                  itemCount: filteredExpenses.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    var transaction = filteredExpenses[index];
-                                    var isExpense =
-                                        transaction.type == "expense";
-                                    var amountColor =
-                                        isExpense ? Colors.red : Colors.green;
+                              var filteredExpenses = filteredCategory
+                                  .where((element) =>
+                                      element.name.toLowerCase().contains(
+                                          _searchController.text
+                                              .toLowerCase()) ||
+                                      element.amount.contains(
+                                          _searchController.text.toLowerCase()))
+                                  .toList();
 
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                          top: 4, bottom: 4),
-                                      child: InkWell(
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) =>
-                                                detailsModal(
-                                                    context,
-                                                    context.read<AuthCubit>(),
-                                                    transaction),
-                                          );
-                                        },
-                                        child: Container(
-                                          margin: EdgeInsets.zero,
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(10)),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                border: Border(
-                                                  left: BorderSide(
-                                                      color: amountColor,
-                                                      width: 5),
-                                                ),
+                              return ListView.builder(
+                                itemCount: filteredExpenses.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var transaction = filteredExpenses[index];
+                                  var isExpense = transaction.type == "expense";
+                                  var amountColor =
+                                      isExpense ? Colors.red : Colors.green;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 4, bottom: 4),
+                                    child: InkWell(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              detailsModal(
+                                                  context,
+                                                  context.read<AuthCubit>(),
+                                                  transaction),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.zero,
+                                        child: ClipRRect(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(10)),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              border: Border(
+                                                left: BorderSide(
+                                                    color: amountColor,
+                                                    width: 5),
                                               ),
-                                              child: ListTile(
-                                                title: mediumFont(
-                                                    transaction.name,
-                                                    color: Colors.black),
-                                                subtitle: mediumFont(
-                                                    "RM${transaction.amount.toString()}",
-                                                    color: Colors.black
-                                                        .withOpacity(0.6)),
-                                                trailing: mediumFont(
-                                                    transaction.category,
-                                                    color: Colors.black54),
-                                              ),
+                                            ),
+                                            child: ListTile(
+                                              title: mediumFont(
+                                                  transaction.name,
+                                                  color: Colors.black),
+                                              subtitle: mediumFont(
+                                                  "RM${transaction.amount.toString()}",
+                                                  color: Colors.black
+                                                      .withOpacity(0.6)),
+                                              trailing: mediumFont(
+                                                  transaction.category,
+                                                  color: Colors.black54),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
-                          divider(),
-                        ],
-                      ),
-                    );
-                  }
+                        ),
+                        divider(),
+                      ],
+                    ),
+                  );
                 },
               ),
             ),

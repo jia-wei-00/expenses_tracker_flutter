@@ -73,7 +73,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         bloc.setExpenses(payload);
         historyBloc.setExpensesHistory(payload);
 
-        emit(FirestoreSuccess(message: "Fetch Success!"));
+        emit(FirestoreSuccess());
       } else {
         emit(FirestoreError(error: "Empty Data"));
       }
@@ -108,7 +108,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           timestamp: expenses.timestamp);
 
       bloc.setExpenses(data_list);
-      emit(FirestoreSuccess(message: "Update Success!"));
+      emit(FirestoreSuccess("Update Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
@@ -127,7 +127,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       data_list.removeAt(index);
       bloc.setExpenses(data_list);
-      emit(FirestoreSuccess(message: "Delete Success!"));
+      emit(FirestoreSuccess("Delete Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
@@ -159,7 +159,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       data_list.insert(0, tmp);
       bloc.setExpenses(data_list);
-      emit(FirestoreSuccess(message: "Add ${expenses.type} success!"));
+      emit(FirestoreSuccess("Add ${expenses.type} success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
@@ -204,7 +204,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
         historyBloc.setExpensesHistory(payload);
 
-        emit(FirestoreSuccess(message: "Fetch Success!"));
+        emit(FirestoreSuccess());
       } else {
         emit(FirestoreError(error: "Empty data for $month"));
       }

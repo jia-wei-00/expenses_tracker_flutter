@@ -6,6 +6,7 @@ import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
 import 'package:expenses_tracker/cubit/todo/todo_cubit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -23,19 +24,27 @@ class _TodoPageState extends State<TodoPage> {
   final _focusNode = FocusNode();
   List<Todo> todoBeforeFilter = [];
   List<Todo> todo = [];
+  User? user;
 
   @override
   void dispose() {
     _searchController.dispose();
     _focusNode.dispose();
+    // updateTodo();
     super.dispose();
+  }
+
+  void updateTodo() {
+    context
+        .read<TodoCubit>()
+        .updateTodo(user!, context.read<TodoBloc>(), todoBeforeFilter);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
-        final user = state is AuthSuccess ? state.user : null;
+        user = state is AuthSuccess ? state.user : null;
         final todoBloc = context.watch<TodoBloc>();
         if (todoBloc.state.isEmpty) {
           context.read<TodoCubit>().fetchTodo(user!, context.read<TodoBloc>());
@@ -116,7 +125,11 @@ class _TodoPageState extends State<TodoPage> {
                               .toList();
                           if (state is TodoLoading) {
                             EasyLoading.show(status: 'loading...');
-                          } else if (state is TodoSuccessReorder) {
+                          }
+                          if (state is TodoSuccess) {
+                            EasyLoading.dismiss();
+                          }
+                          if (state is TodoFailed) {
                             EasyLoading.dismiss();
                           }
                           return ReorderableListView(

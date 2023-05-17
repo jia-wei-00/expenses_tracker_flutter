@@ -114,9 +114,10 @@ class TodoCubit extends Cubit<TodoState> {
     }
   }
 
-  Future<void> editTodo(User user, TodoBloc bloc, Todo todo, int index) async {
+  Future<void> editTodo(
+      User user, TodoBloc bloc, Todo todo, DateTime timestamp) async {
     emit(TodoLoading());
-
+    int index = _todo.indexWhere((todo) => todo.timestamp == timestamp);
     try {
       final docRef = await db
           .collection("expense__tracker")
@@ -138,9 +139,9 @@ class TodoCubit extends Cubit<TodoState> {
     }
   }
 
-  Future<void> deleteTodo(User user, TodoBloc bloc, int index) async {
+  Future<void> deleteTodo(User user, TodoBloc bloc, DateTime timestamp) async {
     emit(TodoLoading());
-
+    int index = _todo.indexWhere((todo) => todo.timestamp == timestamp);
     try {
       final docRef = await db
           .collection("expense__tracker")

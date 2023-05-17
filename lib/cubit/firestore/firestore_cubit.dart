@@ -115,8 +115,10 @@ class FirestoreCubit extends Cubit<FirestoreState> {
   }
 
   Future<void> deleteData(
-      User user, Expense expenses, int index, ExpensesBloc bloc) async {
+      User user, Expense expenses, ExpensesBloc bloc) async {
     emit(FirestoreUpdateLoading());
+    int index = data_list
+        .indexWhere((expense) => expense.timestamp == expenses.timestamp);
     try {
       final querySnapshot = await db
           .collection("expense__tracker")

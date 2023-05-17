@@ -135,8 +135,9 @@ AlertDialog todoModal(BuildContext context, AuthCubit cubit, Todo expenses) {
   );
 }
 
-AlertDialog editModal(User user, List<Expense> expenses, int index,
+AlertDialog editModal(User user, List<Expense> expenses, DateTime timstamp,
     FirestoreCubit firestore, FirestoreState state) {
+  int index = expenses.indexWhere((expense) => expense.timestamp == timstamp);
   final _formKey = GlobalKey<FormState>();
   String _name = expenses[index].name;
   String _type = expenses[index].type;
@@ -289,7 +290,7 @@ AlertDialog editTodoModal(
                         );
 
                         await todoCubit.editTodo(
-                            user, context.read<TodoBloc>(), tmp, index);
+                            user, context.read<TodoBloc>(), tmp, _timestamp);
                         Navigator.pop(context, 'Cancel');
                       }
                     },

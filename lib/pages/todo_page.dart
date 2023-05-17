@@ -223,13 +223,14 @@ class _TodoPageState extends State<TodoPage> {
                                                 onPressed: () {
                                                   showDialog(
                                                       context: context,
-                                                      builder: (BuildContext
-                                                              context) =>
+                                                      builder: (BuildContext context) =>
                                                           alertDeleteTodoDialog(
                                                               context,
                                                               context.read<
                                                                   TodoCubit>(),
                                                               user!,
+                                                              todo[index]
+                                                                  .timestamp,
                                                               index));
                                                 },
                                               ),

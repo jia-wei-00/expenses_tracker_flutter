@@ -38,7 +38,7 @@ AlertDialog alertDialog(BuildContext context, AuthCubit cubit) {
 }
 
 AlertDialog alertDeleteDialog(BuildContext context, FirestoreCubit cubit,
-    User user, Expense transaction, int index) {
+    User user, Expense transaction) {
   return AlertDialog(
     title: bigFont('Alert'),
     content: mediumFont('Do you want to Delete?'),
@@ -59,7 +59,7 @@ AlertDialog alertDeleteDialog(BuildContext context, FirestoreCubit cubit,
                 ElevatedButton(
                   onPressed: () {
                     cubit.deleteData(
-                        user, transaction, index, context.read<ExpensesBloc>());
+                        user, transaction, context.read<ExpensesBloc>());
                     Navigator.pop(context, 'Cancel');
                   },
                   style: ElevatedButton.styleFrom(
@@ -76,8 +76,8 @@ AlertDialog alertDeleteDialog(BuildContext context, FirestoreCubit cubit,
   );
 }
 
-AlertDialog alertDeleteTodoDialog(
-    BuildContext context, TodoCubit cubit, User user, int index) {
+AlertDialog alertDeleteTodoDialog(BuildContext context, TodoCubit cubit,
+    User user, DateTime timestamp, int index) {
   return AlertDialog(
     title: bigFont('Alert'),
     content: mediumFont('Do you want to delete todo No.${index + 1}?'),
@@ -98,7 +98,7 @@ AlertDialog alertDeleteTodoDialog(
                 ElevatedButton(
                   onPressed: () async {
                     await cubit.deleteTodo(
-                        user, context.read<TodoBloc>(), index);
+                        user, context.read<TodoBloc>(), timestamp);
                     Navigator.pop(context, 'Cancel');
                   },
                   style: ElevatedButton.styleFrom(

@@ -271,7 +271,8 @@ class _HomePageState extends State<HomePage> {
                                                           editModal(
                                                               user!,
                                                               expenses,
-                                                              index,
+                                                              transaction
+                                                                  .timestamp,
                                                               context.read<
                                                                   FirestoreCubit>(),
                                                               state),
@@ -295,8 +296,7 @@ class _HomePageState extends State<HomePage> {
                                                               context.read<
                                                                   FirestoreCubit>(),
                                                               user!,
-                                                              transaction,
-                                                              index),
+                                                              transaction),
                                                     );
                                                   },
                                                 ),

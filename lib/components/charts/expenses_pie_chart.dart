@@ -16,6 +16,7 @@ List<Map<String, dynamic>> calculation(List<Expense> expenses) {
   num health = 0;
   num entertain = 0;
   num living = 0;
+  num household = 0;
   num others = 0;
 
   if (expenses.isNotEmpty) {
@@ -40,7 +41,7 @@ List<Map<String, dynamic>> calculation(List<Expense> expenses) {
           living += num.parse(e.amount);
           break;
         case "Household":
-          living += num.parse(e.amount);
+          household += num.parse(e.amount);
           break;
         case "Others":
           others += num.parse(e.amount);
@@ -89,6 +90,14 @@ List<Map<String, dynamic>> calculation(List<Expense> expenses) {
         "type": "Living",
         "percentage": living.toStringAsFixed(2),
         "color": Colors.purple,
+      });
+    }
+
+    if (household > 0) {
+      result.add({
+        "type": "Household",
+        "percentage": household.toStringAsFixed(2),
+        "color": Colors.brown,
       });
     }
 
@@ -173,6 +182,9 @@ class ExpensesChartState extends State {
           iconData = Icons.local_gas_station_rounded;
           break;
         case 'Living':
+          iconData = Icons.living_rounded;
+          break;
+        case 'Household':
           iconData = Icons.house_rounded;
           break;
         case 'Others':

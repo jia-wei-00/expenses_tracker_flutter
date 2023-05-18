@@ -65,7 +65,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> logOut(ExpensesBloc bloc, ExpensesHistoryBloc historyBloc,
-      TodoBloc todoBloc) async {
+      TodoBloc todoBloc, RunOnce runOnce) async {
     emit(AuthLoading());
     try {
       //Sign out firebase
@@ -76,6 +76,7 @@ class AuthCubit extends Cubit<AuthState> {
       bloc.setExpenses([]);
       historyBloc.setExpensesHistory([]);
       todoBloc.setTodo([]);
+      runOnce.setRunOnce(true);
 
       emit(AuthLogout());
     } catch (error) {

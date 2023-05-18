@@ -34,7 +34,7 @@ class TodoCubit extends Cubit<TodoState> {
   TodoCubit() : super(TodoInitial());
 
   final db = FirebaseFirestore.instance;
-  List<Todo> _todo = [];
+  // List<Todo> _todo = [];
 
   Future<void> fetchTodo(User user, TodoBloc bloc) async {
     emit(TodoLoading());
@@ -55,8 +55,7 @@ class TodoCubit extends Cubit<TodoState> {
                 ))
             .toList();
 
-        _todo = data;
-        bloc.setTodo(_todo);
+        bloc.setTodo(data);
         emit(TodoSuccess(message: "Fetch Successfully!"));
       } else {
         emit(TodoFailed(message: "Empty Data!"));
@@ -76,14 +75,16 @@ class TodoCubit extends Cubit<TodoState> {
           .collection("todo__list")
           .doc("todo__array");
 
-      _todo.add(todo);
+      final tmpTodo = bloc.state;
+
+      tmpTodo.add(todo);
 
       // Convert the list of Todo objects to a list of JSON objects
-      final jsonList = _todo.map((todo) => todo.toJson()).toList();
+      final jsonList = tmpTodo.map((todo) => todo.toJson()).toList();
 
       await docRef.update({"todo__array": jsonList});
 
-      bloc.setTodo(_todo);
+      bloc.setTodo(tmpTodo);
       emit(TodoSuccess(message: "Added Successfully"));
     } catch (e) {
       emit(TodoFailed(message: e.toString()));
@@ -100,14 +101,12 @@ class TodoCubit extends Cubit<TodoState> {
           .collection("todo__list")
           .doc("todo__array");
 
-      _todo = todo;
-
       // Convert the list of Todo objects to a list of JSON objects
-      final jsonList = _todo.map((todo) => todo.toJson()).toList();
+      final jsonList = bloc.state.map((todo) => todo.toJson()).toList();
 
       await docRef.update({"todo__array": jsonList});
 
-      bloc.setTodo(_todo);
+      bloc.setTodo(bloc.state);
       emit(TodoSuccess(message: "Updated Successfully"));
     } catch (e) {
       emit(TodoFailed(message: e.toString()));
@@ -117,7 +116,7 @@ class TodoCubit extends Cubit<TodoState> {
   Future<void> editTodo(
       User user, TodoBloc bloc, Todo todo, DateTime timestamp) async {
     emit(TodoLoading());
-    int index = _todo.indexWhere((todo) => todo.timestamp == timestamp);
+    int index = bloc.state.indexWhere((todo) => todo.timestamp == timestamp);
     try {
       final docRef = await db
           .collection("expense__tracker")
@@ -125,14 +124,16 @@ class TodoCubit extends Cubit<TodoState> {
           .collection("todo__list")
           .doc("todo__array");
 
-      _todo[index] = todo;
+      final tmpTodo = bloc.state;
+
+      tmpTodo[index] = todo;
 
       // Convert the list of Todo objects to a list of JSON objects
-      final jsonList = _todo.map((todo) => todo.toJson()).toList();
+      final jsonList = tmpTodo.map((todo) => todo.toJson()).toList();
 
       await docRef.update({"todo__array": jsonList});
 
-      bloc.setTodo(_todo);
+      bloc.setTodo(tmpTodo);
       emit(TodoSuccess(message: "Updated Successfully"));
     } catch (e) {
       emit(TodoFailed(message: e.toString()));
@@ -141,7 +142,9 @@ class TodoCubit extends Cubit<TodoState> {
 
   Future<void> deleteTodo(User user, TodoBloc bloc, DateTime timestamp) async {
     emit(TodoLoading());
-    int index = _todo.indexWhere((todo) => todo.timestamp == timestamp);
+
+    final tmpTodo = bloc.state;
+    int index = tmpTodo.indexWhere((todo) => todo.timestamp == timestamp);
     try {
       final docRef = await db
           .collection("expense__tracker")
@@ -149,14 +152,14 @@ class TodoCubit extends Cubit<TodoState> {
           .collection("todo__list")
           .doc("todo__array");
 
-      _todo.removeAt(index);
+      tmpTodo.removeAt(index);
 
       // Convert the list of Todo objects to a list of JSON objects
-      final jsonList = _todo.map((todo) => todo.toJson()).toList();
+      final jsonList = tmpTodo.map((todo) => todo.toJson()).toList();
 
       await docRef.update({"todo__array": jsonList});
 
-      bloc.setTodo(_todo);
+      bloc.setTodo(tmpTodo);
       emit(TodoSuccess(message: "Updated Successfully"));
     } catch (e) {
       emit(TodoFailed(message: e.toString()));

@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   bigFont("EXPENSES", color: Colors.black),
                                   mediumFont(
-                                      "RM${expense(expenses) == null ? 0 : expense(expenses).toString()}",
+                                      "RM${expense(expenses) == null ? 0 : expense(expenses)!.toStringAsFixed(2)}",
                                       color: Colors.red),
                                 ],
                               ),
@@ -156,7 +156,7 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   bigFont("INCOME", color: Colors.black),
                                   mediumFont(
-                                      "RM${income(expenses) == null ? 0 : income(expenses).toString()}",
+                                      "RM${income(expenses) == null ? 0 : income(expenses)!.toStringAsFixed(2)}",
                                       color: Colors.green),
                                 ],
                               ),

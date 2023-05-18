@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 AlertDialog alertDialog(BuildContext context, AuthCubit cubit) {
+  final runOnce = context.watch<RunOnce>();
   return AlertDialog(
     title: bigFont('Alert'),
     content: mediumFont('Do you want to logout?'),
@@ -26,6 +27,7 @@ AlertDialog alertDialog(BuildContext context, AuthCubit cubit) {
                 context.read<ExpensesBloc>(),
                 context.read<ExpensesHistoryBloc>(),
                 context.read<TodoBloc>(),
+                runOnce,
               );
               Navigator.pop(context, 'Cancel');
             },

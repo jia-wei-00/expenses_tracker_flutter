@@ -34,7 +34,7 @@ class RunOnce extends Cubit<bool> {
 class FirestoreCubit extends Cubit<FirestoreState> {
   FirestoreCubit() : super(FirestoreInitial());
 
-  List<Expense> data_list = [];
+  // List<Expense> data_list = [];
 
   final db = FirebaseFirestore.instance;
 
@@ -68,8 +68,6 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           );
         }).toList();
 
-        data_list = payload;
-
         bloc.setExpenses(payload);
         historyBloc.setExpensesHistory(payload);
 
@@ -99,7 +97,9 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         'timestamp': expenses.timestamp,
       });
 
-      data_list[index] = Expense(
+      final dataList = bloc.state;
+
+      dataList[index] = Expense(
           id: expenses.id,
           amount: expenses.amount,
           name: expenses.name,
@@ -107,7 +107,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           category: expenses.category,
           timestamp: expenses.timestamp);
 
-      bloc.setExpenses(data_list);
+      bloc.setExpenses(dataList);
       emit(FirestoreSuccess("Update Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
@@ -117,7 +117,10 @@ class FirestoreCubit extends Cubit<FirestoreState> {
   Future<void> deleteData(
       User user, Expense expenses, ExpensesBloc bloc) async {
     emit(FirestoreUpdateLoading());
-    int index = data_list
+
+    final dataList = bloc.state;
+
+    int index = dataList
         .indexWhere((expense) => expense.timestamp == expenses.timestamp);
     try {
       final querySnapshot = await db
@@ -127,8 +130,8 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           .doc(expenses.id)
           .delete();
 
-      data_list.removeAt(index);
-      bloc.setExpenses(data_list);
+      dataList.removeAt(index);
+      bloc.setExpenses(dataList);
       emit(FirestoreSuccess("Delete Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
@@ -159,8 +162,10 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           category: expenses.category,
           timestamp: expenses.timestamp);
 
-      data_list.insert(0, tmp);
-      bloc.setExpenses(data_list);
+      final dataList = bloc.state;
+
+      dataList.insert(0, tmp);
+      bloc.setExpenses(dataList);
       emit(FirestoreSuccess("Add ${expenses.type} success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
@@ -197,12 +202,11 @@ class FirestoreCubit extends Cubit<FirestoreState> {
           );
         }).toList();
 
-        if (runOnce) {
-          data_list = payload;
-          bloc.setExpenses(payload);
-
-          setRunOnce.setRunOnce(false);
-        }
+        // if (runOnce) {
+        //   data_list = payload;
+        //   bloc.setExpenses(payload);
+        //   setRunOnce.setRunOnce(false);
+        // }
 
         historyBloc.setExpensesHistory(payload);
 

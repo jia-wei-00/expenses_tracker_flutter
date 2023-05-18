@@ -135,15 +135,15 @@ class _HistoryPageState extends State<HistoryPage> {
         final runOnce = context.watch<RunOnce>().state;
 
         if (expensesHistoryBloc.state.isEmpty) {
-          if (runOnce) {
-            context.read<FirestoreCubit>().fetchHistoryData(
-                user!,
-                context.read<ExpensesBloc>(),
-                context.read<ExpensesHistoryBloc>(),
-                DateFormat('MMMM yyyy').format(DateTime.now()),
-                runOnce,
-                context.read<RunOnce>());
-          }
+          // if (runOnce) {
+          context.read<FirestoreCubit>().fetchHistoryData(
+              user!,
+              context.read<ExpensesBloc>(),
+              context.read<ExpensesHistoryBloc>(),
+              DateFormat('MMMM yyyy').format(DateTime.now()),
+              runOnce,
+              context.read<RunOnce>());
+          // }
         }
 
         return GestureDetector(
@@ -189,7 +189,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                   children: [
                                     bigFont("Balance"),
                                     const SizedBox(width: 5),
-                                    mediumFont(state is! FirestoreLoading
+                                    mediumFont(expensesHistoryBloc.state.isEmpty
                                         ? "(${DateFormat('MMMM yyyy').format(DateTime.now())})"
                                         : "(${DateFormat('MMMM yyyy').format(expensesHistoryBloc.state[0].timestamp)})")
                                   ],

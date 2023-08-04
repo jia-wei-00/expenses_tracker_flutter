@@ -48,33 +48,34 @@ class FirestoreCubit extends Cubit<FirestoreState> {
     emit(FirestoreLoading());
 
     try {
-      final querySnapshot = await db
+      db
           .collection("expense__tracker")
           .doc(user.email)
           .collection(getMonth())
           .orderBy("timestamp", descending: true)
-          .get();
+          .snapshots()
+          .listen((querySnapshot) {
+        if (querySnapshot.size != 0) {
+          final List<Expense> payload = querySnapshot.docs.map((doc) {
+            final data = doc.data();
+            return Expense(
+              id: doc.id,
+              amount: data['amount'].toString(),
+              name: data['name'],
+              type: data['type'],
+              category: data['category'],
+              timestamp: (data['timestamp'] as Timestamp).toDate(),
+            );
+          }).toList();
 
-      if (querySnapshot.size != 0) {
-        final List<Expense> payload = querySnapshot.docs.map((doc) {
-          final data = doc.data();
-          return Expense(
-            id: doc.id,
-            amount: data['amount'].toString(),
-            name: data['name'],
-            type: data['type'],
-            category: data['category'],
-            timestamp: (data['timestamp'] as Timestamp).toDate(),
-          );
-        }).toList();
+          bloc.setExpenses(payload);
+          historyBloc.setExpensesHistory(payload);
 
-        bloc.setExpenses(payload);
-        historyBloc.setExpensesHistory(payload);
-
-        emit(FirestoreSuccess());
-      } else {
-        emit(FirestoreError(error: "Empty Data"));
-      }
+          emit(FirestoreSuccess());
+        } else {
+          emit(FirestoreError(error: "Empty Data"));
+        }
+      });
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }
@@ -97,17 +98,17 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         'timestamp': expenses.timestamp,
       });
 
-      final dataList = bloc.state;
+      // final dataList = bloc.state;
 
-      dataList[index] = Expense(
-          id: expenses.id,
-          amount: expenses.amount,
-          name: expenses.name,
-          type: expenses.type,
-          category: expenses.category,
-          timestamp: expenses.timestamp);
+      // dataList[index] = Expense(
+      //     id: expenses.id,
+      //     amount: expenses.amount,
+      //     name: expenses.name,
+      //     type: expenses.type,
+      //     category: expenses.category,
+      //     timestamp: expenses.timestamp);
 
-      bloc.setExpenses(dataList);
+      // bloc.setExpenses(dataList);
       emit(FirestoreSuccess("Update Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
@@ -118,20 +119,20 @@ class FirestoreCubit extends Cubit<FirestoreState> {
       User user, Expense expenses, ExpensesBloc bloc) async {
     emit(FirestoreUpdateLoading());
 
-    final dataList = bloc.state;
+    // final dataList = bloc.state;
 
-    int index = dataList
-        .indexWhere((expense) => expense.timestamp == expenses.timestamp);
+    // int index = dataList
+    //     .indexWhere((expense) => expense.timestamp == expenses.timestamp);
     try {
-      final querySnapshot = await db
+      await db
           .collection("expense__tracker")
           .doc(user.email)
           .collection(DateFormat('MMMM yyyy').format(expenses.timestamp))
           .doc(expenses.id)
           .delete();
 
-      dataList.removeAt(index);
-      bloc.setExpenses(dataList);
+      // dataList.removeAt(index);
+      // bloc.setExpenses(dataList);
       emit(FirestoreSuccess("Delete Success!"));
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
@@ -182,38 +183,33 @@ class FirestoreCubit extends Cubit<FirestoreState> {
     emit(FirestoreLoading());
 
     try {
-      final querySnapshot = await db
+      db
           .collection("expense__tracker")
           .doc(user.email)
           .collection(month)
           .orderBy("timestamp", descending: true)
-          .get();
+          .snapshots()
+          .listen((querySnapshot) {
+        if (querySnapshot.size != 0) {
+          final List<Expense> payload = querySnapshot.docs.map((doc) {
+            final data = doc.data();
+            return Expense(
+              id: doc.id,
+              amount: data['amount'].toString(),
+              name: data['name'],
+              type: data['type'],
+              category: data['category'],
+              timestamp: (data['timestamp'] as Timestamp).toDate(),
+            );
+          }).toList();
 
-      if (querySnapshot.size != 0) {
-        final List<Expense> payload = querySnapshot.docs.map((doc) {
-          final data = doc.data();
-          return Expense(
-            id: doc.id,
-            amount: data['amount'].toString(),
-            name: data['name'],
-            type: data['type'],
-            category: data['category'],
-            timestamp: (data['timestamp'] as Timestamp).toDate(),
-          );
-        }).toList();
+          historyBloc.setExpensesHistory(payload);
 
-        // if (runOnce) {
-        //   data_list = payload;
-        //   bloc.setExpenses(payload);
-        //   setRunOnce.setRunOnce(false);
-        // }
-
-        historyBloc.setExpensesHistory(payload);
-
-        emit(FirestoreSuccess());
-      } else {
-        emit(FirestoreError(error: "Empty data for $month"));
-      }
+          emit(FirestoreSuccess());
+        } else {
+          emit(FirestoreError(error: "Empty data for $month"));
+        }
+      });
     } catch (e) {
       emit(FirestoreError(error: e.toString()));
     }

@@ -22,6 +22,14 @@ class Todo {
   }
 }
 
+class RunOnceTodo extends Cubit<bool> {
+  RunOnceTodo() : super(true);
+
+  void setRunOnceTodo(bool set) {
+    emit(set);
+  }
+}
+
 class TodoBloc extends Cubit<List<Todo>> {
   TodoBloc() : super([]);
 

@@ -32,6 +32,7 @@ Future<void> main() async {
         BlocProvider(create: (context) => RunOnce()),
         BlocProvider(create: (context) => TodoCubit()),
         BlocProvider(create: (context) => TodoBloc()),
+        BlocProvider(create: (context) => RunOnceTodo()),
       ],
       child: const MainApp(),
     ),

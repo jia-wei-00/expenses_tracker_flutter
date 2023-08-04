@@ -75,21 +75,6 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Future<void> getCurrent(BuildContext context) async {
-    //   final DateTime? date = await showDatePicker(
-    //       context: context,
-    //       initialDate: DateTime.now(),
-    //       // firstDate: DateTime(200),
-    //       // lastDate: DateTime(3000));
-    //       firstDate: DateTime.now().subtract(Duration(days: 365 * 2)),
-    //       lastDate: DateTime.now());
-    //   if (date != null) {
-    //     setState(() {
-    //       CurrentDate = DateFormat("yyyy-MM-dd").format(date);
-    //     });
-    //   }
-    // }
-
     Future<void> _onPressed(
         {required BuildContext context,
         required DateTime date,
@@ -173,6 +158,23 @@ class _HistoryPageState extends State<HistoryPage> {
                 },
                 builder: (context, state) {
                   expenses = expensesHistoryBloc.state;
+                  var filteredCategory = expenses
+                      .where((element) =>
+                          dropdownValue.toLowerCase() == "all" ||
+                          element.category
+                              .toLowerCase()
+                              .contains(dropdownValue.toLowerCase()))
+                      .toList();
+                  var filteredExpenses = filteredCategory
+                      .where((element) =>
+                          element.name
+                              .toLowerCase()
+                              .contains(_searchController.text.toLowerCase()) ||
+                          element.amount
+                              .toString()
+                              .toLowerCase()
+                              .contains(_searchController.text.toLowerCase()))
+                      .toList();
 
                   return SingleChildScrollView(
                     child: Column(
@@ -246,7 +248,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                   children: [
                                     bigFont("INCOME", color: Colors.black),
                                     mediumFont(
-                                        "RM${income(expenses) == null ? 0 : income(expenses)!.toStringAsFixed(2)}",
+                                        "RM${income(expenses)?.toStringAsFixed(2) ?? "0"}",
                                         color: Colors.green),
                                   ],
                                 ),
@@ -254,17 +256,10 @@ class _HistoryPageState extends State<HistoryPage> {
                             ),
                           ],
                         ),
-
-                        // BarChartSample2(),
-                        // LineChartSample2(),
-                        const SizedBox(
-                          height: 20,
-                        ),
+                        const SizedBox(height: 20),
                         mediumFont("Chart"),
                         divider(),
-                        const SizedBox(
-                          height: 5,
-                        ),
+                        const SizedBox(height: 5),
                         Chart(expenses: expensesHistoryBloc.state),
                         Padding(
                           padding: const EdgeInsets.only(top: 5, bottom: 5),
@@ -296,6 +291,10 @@ class _HistoryPageState extends State<HistoryPage> {
                                       ),
                                     ),
                                     style: const TextStyle(fontSize: 15),
+                                    onChanged: (value) {
+                                      setState(
+                                          () {}); // Trigger re-render when the search input changes
+                                    },
                                   ),
                                 ),
                               ),
@@ -303,19 +302,18 @@ class _HistoryPageState extends State<HistoryPage> {
                           ),
                         ),
                         divider(),
-
-                        //Dropdown for filter category
+                        // Dropdown for filter category
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Container(
-                              // decoration: BoxDecoration(
-                              //   border: Border.all(color: Colors.grey),
-                              //   borderRadius: BorderRadius.circular(10),
-                              // ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5),
+                                child: smallFont(
+                                    "RM${expense(filteredExpenses)?.toStringAsFixed(2) ?? '0'}")),
+                            Container(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 5),
-                              // margin: const EdgeInsets.symmetric(vertical: 8),
                               child: DropdownButton<String>(
                                 value: dropdownValue,
                                 items: <String>[
@@ -331,9 +329,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                 ].map<DropdownMenuItem<String>>((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: smallFont(
-                                      value,
-                                    ),
+                                    child: smallFont(value),
                                   );
                                 }).toList(),
                                 onChanged: (String? newValue) {
@@ -348,79 +344,56 @@ class _HistoryPageState extends State<HistoryPage> {
                         ),
                         SizedBox(
                           height: 350,
-                          child: ValueListenableBuilder(
-                            valueListenable: _searchController,
-                            builder: (BuildContext context, _, __) {
-                              var filteredCategory = expenses
-                                  .where((element) =>
-                                      dropdownValue.toLowerCase() == "all" ||
-                                      element.category.toLowerCase().contains(
-                                          dropdownValue.toLowerCase()))
-                                  .toList();
+                          child: ListView.builder(
+                            itemCount: filteredExpenses.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              var transaction = filteredExpenses[index];
+                              var isExpense = transaction.type == "expense";
+                              var amountColor =
+                                  isExpense ? Colors.red : Colors.green;
 
-                              var filteredExpenses = filteredCategory
-                                  .where((element) =>
-                                      element.name.toLowerCase().contains(
-                                          _searchController.text
-                                              .toLowerCase()) ||
-                                      element.amount.contains(
-                                          _searchController.text.toLowerCase()))
-                                  .toList();
-
-                              return ListView.builder(
-                                itemCount: filteredExpenses.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  var transaction = filteredExpenses[index];
-                                  var isExpense = transaction.type == "expense";
-                                  var amountColor =
-                                      isExpense ? Colors.red : Colors.green;
-
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 4, bottom: 4),
-                                    child: InkWell(
-                                      onTap: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) =>
-                                              detailsModal(
-                                                  context,
-                                                  context.read<AuthCubit>(),
-                                                  transaction),
-                                        );
-                                      },
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 4, bottom: 4),
+                                child: InkWell(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) =>
+                                          detailsModal(
+                                              context,
+                                              context.read<AuthCubit>(),
+                                              transaction),
+                                    );
+                                  },
+                                  child: Container(
+                                    margin: EdgeInsets.zero,
+                                    child: ClipRRect(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(10)),
                                       child: Container(
-                                        margin: EdgeInsets.zero,
-                                        child: ClipRRect(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(10)),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              border: Border(
-                                                left: BorderSide(
-                                                    color: amountColor,
-                                                    width: 5),
-                                              ),
-                                            ),
-                                            child: ListTile(
-                                              title: mediumFont(
-                                                  transaction.name,
-                                                  color: Colors.black),
-                                              subtitle: mediumFont(
-                                                  "RM${transaction.amount.toString()}",
-                                                  color: Colors.black
-                                                      .withOpacity(0.6)),
-                                              trailing: mediumFont(
-                                                  transaction.category,
-                                                  color: Colors.black54),
-                                            ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border(
+                                            left: BorderSide(
+                                                color: amountColor, width: 5),
                                           ),
+                                        ),
+                                        child: ListTile(
+                                          title: mediumFont(transaction.name,
+                                              color: Colors.black),
+                                          subtitle: mediumFont(
+                                              "RM${transaction.amount.toString()}",
+                                              color: Colors.black
+                                                  .withOpacity(0.6)),
+                                          trailing: mediumFont(
+                                              transaction.category,
+                                              color: Colors.black54),
                                         ),
                                       ),
                                     ),
-                                  );
-                                },
+                                  ),
+                                ),
                               );
                             },
                           ),

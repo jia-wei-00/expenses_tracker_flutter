@@ -46,8 +46,10 @@ class _TodoPageState extends State<TodoPage> {
       builder: (context, state) {
         user = state is AuthSuccess ? state.user : null;
         final todoBloc = context.watch<TodoBloc>();
-        if (todoBloc.state.isEmpty) {
+        final runOnce = context.watch<RunOnceTodo>();
+        if (todoBloc.state.isEmpty && runOnce.state) {
           context.read<TodoCubit>().fetchTodo(user!, context.read<TodoBloc>());
+          context.read<RunOnceTodo>().setRunOnceTodo(false);
         }
         return GestureDetector(
           onTap: () {

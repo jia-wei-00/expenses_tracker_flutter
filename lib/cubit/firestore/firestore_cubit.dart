@@ -165,7 +165,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       final dataList = bloc.state;
 
-      dataList.insert(0, tmp);
+      // dataList.insert(0, tmp);
       bloc.setExpenses(dataList);
       emit(FirestoreSuccess("Add ${expenses.type} success!"));
     } catch (e) {

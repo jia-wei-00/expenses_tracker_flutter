@@ -4,6 +4,7 @@ import 'package:expenses_tracker/components/snackbar.dart';
 import 'package:expenses_tracker/constant/page_constant.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
+import 'package:expenses_tracker/cubit/loan/loan_cubit.dart';
 import 'package:expenses_tracker/cubit/route/route_cubit.dart';
 import 'package:expenses_tracker/cubit/todo/todo_cubit.dart';
 import 'package:expenses_tracker/pages/login_page.dart';
@@ -26,6 +27,8 @@ Future<void> main() async {
       providers: [
         BlocProvider(create: (context) => RouteCubit()),
         BlocProvider(create: (context) => AuthCubit()),
+        BlocProvider(create: (context) => LoanCubit()),
+        BlocProvider(create: (context) => LoanBloc()),
         BlocProvider(create: (context) => FirestoreCubit()),
         BlocProvider(create: (context) => ExpensesBloc()),
         BlocProvider(create: (context) => ExpensesHistoryBloc()),

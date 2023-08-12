@@ -1,6 +1,7 @@
 import 'package:expenses_tracker/components/text.dart';
 import 'package:expenses_tracker/cubit/auth/auth_cubit.dart';
 import 'package:expenses_tracker/cubit/firestore/firestore_cubit.dart';
+import 'package:expenses_tracker/cubit/loan/loan_cubit.dart';
 import 'package:expenses_tracker/cubit/todo/todo_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,54 @@ List<String> _typesExpense = [
 ];
 
 List<String> _typesIncome = ['Salary', 'Others'];
+
+class PaymentDetail {
+  final String date;
+  final double amount;
+
+  PaymentDetail({required this.date, required this.amount});
+}
+
+AlertDialog loanDetails(Loan loan) {
+  List<DataRow> rows = loan.history.map((detail) {
+    return DataRow(cells: [
+      DataCell(Text(detail.timestamp.toString())),
+      DataCell(Text("RM ${detail.amount.toString()}")),
+      DataCell(
+        IconButton(
+          icon: const Icon(Icons.delete_forever),
+          color: Colors.red,
+          onPressed: () {},
+        ),
+      ),
+    ]);
+  }).toList();
+
+  return AlertDialog(
+    title: bigFont('Details'),
+    content: SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          dataRowHeight: 50,
+          columns: const [
+            DataColumn(label: Text('Date')),
+            DataColumn(label: Text('Amount')),
+            DataColumn(label: Text('')),
+          ],
+          rows: rows,
+        ),
+      ),
+    ),
+    actions: [
+      ElevatedButton(
+        onPressed: () => {},
+        child: mediumFont('Add'),
+      ),
+    ],
+  );
+}
 
 AlertDialog detailsModal(
     BuildContext context, AuthCubit cubit, Expense expenses) {

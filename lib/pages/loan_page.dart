@@ -1,4 +1,5 @@
 import 'package:expenses_tracker/components/details_modal.dart';
+import 'package:expenses_tracker/components/dialog.dart';
 import 'package:expenses_tracker/components/divider.dart';
 import 'package:expenses_tracker/components/snackbar.dart';
 import 'package:expenses_tracker/components/text.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class LoanPage extends StatefulWidget {
   const LoanPage({super.key});
@@ -49,16 +51,13 @@ class _LoanPageState extends State<LoanPage> {
                         state.message, Colors.green, Colors.white, context);
                   }
 
-                  // if (state is FirestoreUpdateLoading) {
-                  //   EasyLoading.show(status: 'loading...');
-                  // }
-
                   if (state is LoanLoading) {
                     EasyLoading.show(status: 'loading...');
                   }
 
                   if (state is LoanFailed) {
                     EasyLoading.dismiss();
+                    print(state.message);
                     snackBar(
                         state.message, Colors.green, Colors.white, context);
                   }
@@ -124,23 +123,55 @@ class _LoanPageState extends State<LoanPage> {
                                     return Padding(
                                       padding: const EdgeInsets.only(
                                           top: 4, bottom: 4),
-                                      child: Dismissible(
-                                        key: Key(index
-                                            .toString()), // Provide a unique key for each item
-                                        onDismissed: (direction) {
-                                          // Remove the item from the data source here
-                                          setState(() {
-                                            // Remove the item at index from your data source
-                                          });
-                                        },
-                                        background: Container(
-                                          color: Colors
-                                              .red, // Background color when swiping
-                                          alignment: Alignment.centerRight,
-                                          padding:
-                                              const EdgeInsets.only(right: 16),
-                                          child: const Icon(Icons.delete,
-                                              color: Colors.white),
+                                      child: Slidable(
+                                        endActionPane: ActionPane(
+                                          // A motion is a widget used to control how the pane animates.
+                                          motion: const ScrollMotion(),
+
+                                          // All actions are defined in the children parameter.
+                                          children: [
+                                            // A SlidableAction can have an icon and/or a label.
+                                            SlidableAction(
+                                              onPressed:
+                                                  (BuildContext context) {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext
+                                                          context) =>
+                                                      alertDeleteDialogLoan(
+                                                          context,
+                                                          user!,
+                                                          filteredLoan[index]
+                                                              .name),
+                                                );
+                                              },
+                                              backgroundColor:
+                                                  const Color(0xFFFE4A49),
+                                              foregroundColor: Colors.white,
+                                              icon: Icons.delete,
+                                              label: 'Delete',
+                                            ),
+                                            SlidableAction(
+                                              onPressed:
+                                                  (BuildContext context) {
+                                                showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext
+                                                                context) =>
+                                                            addLoanPaymentModal(
+                                                                user!,
+                                                                context.read<
+                                                                    LoanCubit>(),
+                                                                filteredLoan[
+                                                                    index]));
+                                              },
+                                              backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white,
+                                              icon: Icons.add,
+                                              label: 'Add',
+                                            ),
+                                          ],
                                         ),
                                         child: InkWell(
                                           onTap: () {
@@ -203,7 +234,11 @@ class _LoanPageState extends State<LoanPage> {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                // Add your button's functionality here
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) =>
+                      addLoanModal(user!, context.read<LoanCubit>()),
+                );
               },
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
@@ -215,3 +250,5 @@ class _LoanPageState extends State<LoanPage> {
     );
   }
 }
+
+void doNothing(BuildContext context) {}

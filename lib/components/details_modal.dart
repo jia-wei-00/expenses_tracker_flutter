@@ -27,10 +27,151 @@ class PaymentDetail {
   PaymentDetail({required this.date, required this.amount});
 }
 
+AlertDialog addLoanPaymentModal(User user, LoanCubit cubit, Loan loan) {
+  final _formKey = GlobalKey<FormState>();
+  num _amount = 0;
+
+  return AlertDialog(
+    title: bigFont("Add Loan Payment"),
+    content: Form(
+      key: _formKey,
+      child: IntrinsicHeight(
+        child: Column(
+          children: [
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Amount'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _amount = num.parse(value),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter an amount';
+                }
+                try {
+                  double.parse(value);
+                } catch (e) {
+                  return 'Please enter a valid number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            BlocBuilder<LoanCubit, LoanState>(
+              builder: (context, state) {
+                if (state is FirestoreUpdateLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        await cubit.addLoanPayment(user, loan, _amount);
+                        Navigator.pop(context, 'Cancel');
+                      }
+                    },
+                    child: const Text('Submit'),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+AlertDialog addLoanModal(User user, LoanCubit loan) {
+  final _formKey = GlobalKey<FormState>();
+  String _name = "";
+  num _amount = 0;
+
+  return AlertDialog(
+    title: bigFont("Add Loan"),
+    content: Form(
+      key: _formKey,
+      child: IntrinsicHeight(
+        child: Column(
+          children: [
+            TextFormField(
+              initialValue: _name,
+              decoration: const InputDecoration(labelText: 'Name'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a name';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                // Save the form value
+                _name = value;
+              },
+            ),
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Amount'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _amount = num.parse(value),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter an amount';
+                }
+                try {
+                  double.parse(value);
+                } catch (e) {
+                  return 'Please enter a valid number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            BlocBuilder<LoanCubit, LoanState>(
+              builder: (context, state) {
+                if (state is FirestoreUpdateLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        final tmp = Loan(
+                            name: _name,
+                            total: _amount,
+                            paid: 0,
+                            remain: 0,
+                            history: []);
+
+                        await loan.addLoan(user, context.read<LoanBloc>(), tmp);
+                        Navigator.pop(context, 'Cancel');
+                      }
+                    },
+                    child: const Text('Submit'),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 AlertDialog loanDetails(Loan loan) {
   List<DataRow> rows = loan.history.map((detail) {
     return DataRow(cells: [
-      DataCell(Text(detail.timestamp.toString())),
+      DataCell(
+        SizedBox(
+          width: 120, // Set the maximum width for the date cell
+          child: Text(
+            detail.timestamp.toString(),
+          ),
+        ),
+      ),
       DataCell(Text("RM ${detail.amount.toString()}")),
       DataCell(
         IconButton(

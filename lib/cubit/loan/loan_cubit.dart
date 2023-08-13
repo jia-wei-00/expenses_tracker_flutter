@@ -2,12 +2,13 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
+import 'package:intl/intl.dart';
 
 part 'loan_state.dart';
 
 class Loan {
   final String name;
-  final String total;
+  final num total;
   final num remain;
   final num paid;
   final List<LoanDetails> history;
@@ -53,8 +54,6 @@ class LoanCubit extends Cubit<LoanState> {
   Future<void> fetchLoan(User user, LoanBloc bloc) async {
     emit(LoanLoading());
 
-    List<Loan> loans = [];
-
     try {
       db
           .collection("expense__tracker")
@@ -83,7 +82,7 @@ class LoanCubit extends Cubit<LoanState> {
 
             return Loan(
               name: doc.id,
-              total: data['total'].toString(),
+              total: data['total'],
               remain: remain,
               paid: paid,
               history: history,
@@ -98,48 +97,38 @@ class LoanCubit extends Cubit<LoanState> {
     }
   }
 
-  Future<void> addLoan(User user, LoanBloc bloc, Loan todo) async {
+  Future<void> addLoan(User user, LoanBloc bloc, Loan loan) async {
     emit(LoanLoading());
 
     try {
       final docRef = await db
           .collection("expense__tracker")
           .doc(user.email)
-          .collection("todo__list")
-          .doc("todo__array");
+          .collection("loan__list")
+          .doc(loan.name)
+          .set({"history": [], "total": loan.total});
 
-      final tmpTodo = bloc.state;
-
-      tmpTodo.add(todo);
-
-      // Convert the list of Todo objects to a list of JSON objects
-      final jsonList = tmpTodo.map((todo) => todo.toJson()).toList();
-
-      await docRef.update({"todo__array": jsonList});
-
-      bloc.setLoan(tmpTodo);
       emit(LoanSuccess(message: "Added Successfully"));
     } catch (e) {
       emit(LoanFailed(message: e.toString()));
     }
   }
 
-  Future<void> updateTodo(User user, LoanBloc bloc, List<Loan> todo) async {
+  Future<void> addLoanPayment(User user, Loan loan, num amount) async {
     emit(LoanLoading());
 
     try {
       final docRef = await db
           .collection("expense__tracker")
           .doc(user.email)
-          .collection("todo__list")
-          .doc("todo__array");
+          .collection("loan__list")
+          .doc(loan.name)
+          .update({
+        "history": FieldValue.arrayUnion([
+          {"amount": amount, "timestamp": Timestamp.now()}
+        ])
+      });
 
-      // Convert the list of Todo objects to a list of JSON objects
-      final jsonList = bloc.state.map((todo) => todo.toJson()).toList();
-
-      await docRef.update({"todo__array": jsonList});
-
-      bloc.setLoan(bloc.state);
       emit(LoanSuccess(message: "Updated Successfully"));
     } catch (e) {
       emit(LoanFailed(message: e.toString()));
@@ -173,29 +162,20 @@ class LoanCubit extends Cubit<LoanState> {
   //   }
   // }
 
-  // Future<void> deleteTodo(User user, LoanBloc bloc, DateTime timestamp) async {
-  //   emit(LoanLoading());
+  Future<void> deleteLoan(User user, String name) async {
+    emit(LoanLoading());
 
-  //   final tmpTodo = bloc.state;
-  //   int index = tmpTodo.indexWhere((todo) => todo.timestamp == timestamp);
-  //   try {
-  //     final docRef = await db
-  //         .collection("expense__tracker")
-  //         .doc(user.email)
-  //         .collection("todo__list")
-  //         .doc("todo__array");
+    try {
+      await db
+          .collection("expense__tracker")
+          .doc(user.email)
+          .collection("loan__list")
+          .doc(name)
+          .delete();
 
-  //     tmpTodo.removeAt(index);
-
-  //     // Convert the list of Todo objects to a list of JSON objects
-  //     final jsonList = tmpTodo.map((todo) => todo.toJson()).toList();
-
-  //     await docRef.update({"todo__array": jsonList});
-
-  //     bloc.setLoan(tmpTodo);
-  //     emit(LoanSuccess(message: "Updated Successfully"));
-  //   } catch (e) {
-  //     emit(LoanFailed(message: e.toString()));
-  //   }
-  // }
+      emit(LoanSuccess(message: "Deleted Successfully"));
+    } catch (e) {
+      emit(LoanFailed(message: e.toString()));
+    }
+  }
 }

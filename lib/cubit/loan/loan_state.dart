@@ -20,8 +20,14 @@ class LoanSuccess extends LoanState {
 class LoanLoading extends LoanState {}
 
 class LoanDetails {
-  final int amount;
+  final num amount;
   final DateTime timestamp;
 
   LoanDetails({required this.amount, required this.timestamp});
+}
+
+class LoanPayment {
+  final num amount;
+
+  LoanPayment({required this.amount});
 }
